@@ -1,0 +1,19 @@
+# ignore files without extensions
+*
+!*.*
+!*/
+
+# python bytecode
+*.pyc
+__pycache__
+
+# temporary files
+*.sw*
+
+# data files
+*.dat
+*.db
+*.root
+
+# log files
+*.log
