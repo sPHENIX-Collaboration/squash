@@ -39,6 +39,4 @@ class SquashHelper:
         self.squash.insert_entry(raw, self.object.parser)
 
     def select(self, column='*', condition=''):
-        output = self.squash.select_entry(self.table, column, condition)
-
-        print(output)
+        return self.squash.select_entry(self.table, column, condition)
