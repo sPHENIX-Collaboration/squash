@@ -1,29 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
-from helper import SquashHelper
 from scipy.optimize import curve_fit
+
 from utils import (
-    powerlaw_singleexp,
     powerlaw_doubleexp,
     powerlaw_doubleexp_part0,
-    powerlaw_doubleexp_part1)
+    powerlaw_doubleexp_part1,
+)
 
 
-def fit_signal(raw, pulse, channel, **kwargs):
+def fit_signal(mean, sigma, nsamples, pulse, channel, **kwargs):
     print('pulse: {}, channel: {}'.format(pulse, channel))
 
-    mean = np.mean(raw, axis=1)
-    sigma = np.std(raw, axis=1)
-
-    nsamples = raw.shape[-1]
-
-    x = np.array(range(0, nsamples))
+    x = np.array(range(nsamples))
     y = mean[pulse,channel,:]
     w = sigma[pulse,channel,:]
 
     amax = np.amax(y)
-    argmax = np.argmax(y)
 
     pval = [amax * 0.76, 3.5,    0.66,    0.96,    y[0], 0.56,    2.77]
     bmin = [        0.0, 0.0, -np.inf, -np.inf, -np.inf,  0.0, -np.inf]
@@ -32,12 +25,12 @@ def fit_signal(raw, pulse, channel, **kwargs):
     popt, pcov = curve_fit(powerlaw_doubleexp, x, y, sigma=w, p0=pval,
         bounds=(bmin, bmax), **kwargs)
 
-    print(popt)
-    print(np.sqrt(np.diag(pcov)))
+    # print(popt)
+    # print(np.sqrt(np.diag(pcov)))
 
-    residuals = (powerlaw_doubleexp(x, *popt) - y) / y
+    # residuals = (powerlaw_doubleexp(x, *popt) - y) / y
 
-    print(np.sum(np.abs(residuals)) / nsamples)
+    # print(np.sum(np.abs(residuals)) / nsamples)
 
     return popt, pcov
 

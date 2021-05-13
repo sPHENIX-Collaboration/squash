@@ -4,9 +4,16 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from numpy.polynomial import Polynomial
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, fmin
 
-from utils import read_and_discard_lines, read_config_line, split_dword, linear
+from fitting import fit_signal
+from utils import (
+    read_and_discard_lines,
+    read_config_line,
+    split_dword,
+    linear,
+    powerlaw_doubleexp,
+)
 
 
 class DataFormatError(Exception):
@@ -116,33 +123,46 @@ class DataFormat_v1(DataFormat):
             if output == 'raw':
                 return data
 
-            print(data.shape)
-            data = data[:,:100,:,:]
-            print(data.shape)
-
             mean = np.mean(data, axis=1)
             sigma = np.std(data, axis=1)
 
-            integral = np.sum(mean, axis=-1).transpose() / nsample
-            quadsums = np.sqrt(np.sum(np.square(sigma), axis=-1)).transpose() / nsample
+            x = np.arange(nstep)
+            y = np.zeros((16, nstep))
 
-            x = np.arange(0, integral.shape[-1], 1)
-            w = 1.0 / quadsums
+            def min_form(x, *args):
+                return -powerlaw_doubleexp(x, *args)
 
-            try:
-                coefs = np.stack(
-                    [
-                        Polynomial.fit(x, integral[i], 1, w=w[i]).convert().coef
-                        for i in range(integral.shape[0])
-                    ]
-                )
-            except np.linalg.LinAlgError:
-                coefs = np.zeros((integral.shape[0], 2))
+            for i in range(nstep):
+                for j in range(0, 16):
+                    try:
+                        popt, pcov = fit_signal(mean, sigma, nsample, i, j,
+                            method='dogbox')
+                        xmin = fmin(min_form, 5, args=tuple(popt))
 
-            entry.append(str(coefs))
+                        y[j][i] = powerlaw_doubleexp(xmin, *popt)
+                    except RuntimeError:
+                        pass
+
+            pval = [1500, 375]
+            bmin = [ 500, 275]
+            bmax = [2500, 475]
+
+            pars = np.zeros((0, 2))
+            errs = np.zeros((0, 2))
+
+            for i in range(y.shape[0]):
+                popt, pcov = curve_fit(linear, x[2:], y[i,2:], p0=pval,
+                    bounds=(bmin, bmax))
+
+                pars = np.vstack((pars, popt))
+                errs = np.vstack((errs, np.sqrt(np.diag(pcov))))
+
+            entry.append(str(pars) + str(errs))
+
+            print(pars)
 
             if output == 'signal':
-                return mean, sigma, integral, quadsums, coefs
+                return mean, sigma, y, pars, errs
 
         return entry
 

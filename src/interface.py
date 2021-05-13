@@ -160,7 +160,7 @@ class SquashInterface:
         if self.results is None or self.selection is None:
             return
 
-        mean, sigma, integral, quadsums, coefs = self.squash.object.parser(
+        mean, sigma, y, pars, _ = self.squash.object.parser(
             self.results[self.selection][0], output='signal'
         )
 
@@ -179,18 +179,18 @@ class SquashInterface:
             return
 
         if c_null is True and p_null is True:
-            labels = list(zip(range(integral.shape[0])))
+            labels = list(zip(range(y.shape[0])))
 
-            disp_opts['yrange'] = (0, 7500, 1500)
+            disp_opts['yrange'] = (0, 18000, 4000)
             disp_opts['interval'] = 5
-            disp_opts['labels'] = ('pulse #', 'integrated ADC')
+            disp_opts['labels'] = ('pulse #', 'pulse maximum')
             disp_opts['fmt_str'] = ['channel {}', '[{:.0f}, {:.0f}]']
-            disp_opts['fmt_data'] = [labels, coefs.tolist()]
+            disp_opts['fmt_data'] = [labels, pars.tolist()]
 
-            draw_graph(integral, quadsums, **disp_opts)
+            draw_graph(y, None, **disp_opts)
         else:
-            disp_opts['yrange'] = (0, 16000, 2000)
-            disp_opts['interval'] = 4
+            disp_opts['yrange'] = (0, 18000, 4000)
+            disp_opts['interval'] = 5
             disp_opts['labels'] = ('sample #', 'ADC value')
 
             if c_null is True:
