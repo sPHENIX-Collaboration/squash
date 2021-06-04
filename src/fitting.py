@@ -14,7 +14,7 @@ def fit_signal(mean, sigma, nsamples, pulse, channel, **kwargs):
 
     x = np.array(range(nsamples))
     y = mean[pulse,channel,:]
-    w = sigma[pulse,channel,:]
+    w = sigma[pulse,channel,:] if sigma is not None else None
 
     amax = np.amax(y)
 
