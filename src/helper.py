@@ -1,5 +1,7 @@
 # pylint: disable=missing-docstring,invalid-name
 
+import operator
+
 from squash import Squash
 
 import formats
@@ -40,3 +42,15 @@ class SquashHelper:
 
     def select(self, column='*', condition=''):
         return self.squash.select_entry(self.table, column, condition)
+
+    def update(self, columns, data, condition):
+        return self.squash.update_entry(columns, data, condition, self.table)
+
+    def append(self, columns, data, condition):
+        entry = [self.select(c, condition)[0][0] for c in columns]
+
+        if not all(isinstance(v, str) for v in entry):
+            raise TypeError('append operation is supported only for strings')
+
+        values = list(map(operator.add, entry, map(str, data)))
+        self.update(columns, values, condition)

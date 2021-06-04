@@ -73,6 +73,11 @@ class SquashInterface:
         self.e_pulse = tk.Entry(self.frame)
         self.l_pulse = tk.Label(self.frame, text='pulse')
 
+        self.b_edit = tk.Button(self.frame, text='append')
+        self.b_edit['command'] = self.on_click_edit
+
+        self.e_edit = tk.Entry(self.frame)
+
     def clear_widgets(self):
         self.b_open.place_forget()
         self.b_browse.place_forget()
@@ -90,6 +95,8 @@ class SquashInterface:
             self.l_chan.place_forget()
             self.e_pulse.place_forget()
             self.l_pulse.place_forget()
+            self.b_edit.place_forget()
+            self.e_edit.place_forget()
 
         self.e_text.delete(0, tk.END)
         self.l_info.delete(0, tk.END)
@@ -118,6 +125,8 @@ class SquashInterface:
             self.l_chan.place(x=130, y=540, width=80)
             self.e_pulse.place(x=230, y=510, width=80)
             self.l_pulse.place(x=230, y=540, width=80)
+            self.b_edit.place(x=30, y=480, width=80)
+            self.e_edit.place(x=130, y=480, width=180)
 
         if self.mode is SIModes.WAITING:
             self.b_open.place(x=130, y=10, width=80)
@@ -204,6 +213,11 @@ class SquashInterface:
 
             draw_graph(mean[selection], sigma[selection], **disp_opts)
 
+    def on_click_edit(self):
+        text = self.e_edit.get()
+
+        self.append_database_entry(text)
+
     def on_select_entry(self, event):
         selection = event.widget.curselection()
 
@@ -241,6 +255,15 @@ class SquashInterface:
             raise FileNotFoundError
 
         self.squash.insert(path)
+
+    def append_database_entry(self, text):
+        if self.selection is None:
+            return
+
+        label = self.results[self.selection][0]
+        condition = 'WHERE label = \'{}\''.format(label)
+
+        self.squash.append(['info'], [text], condition)
 
     def select_database_entries(self, text):
         query = '*' if not text else text

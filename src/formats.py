@@ -1,6 +1,7 @@
 # pylint: disable=missing-docstring,invalid-name
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 import numpy as np
 from numpy.polynomial import Polynomial
@@ -60,6 +61,7 @@ class DataFormat_v1(DataFormat):
         'nstep_data': 'INTEGER',
         'nsample': 'INTEGER',
         'coefs': 'TEXT',
+        'info': 'TEXT',
     }
 
     def parser(self, raw, output='entry'):
@@ -165,6 +167,9 @@ class DataFormat_v1(DataFormat):
                 errs = np.vstack((errs, np.sqrt(np.diag(pcov))))
 
             entry.append(str(pars) + str(errs))
+
+            timestamp = datetime.today().strftime('%y%m%d-%H:%M:%S')
+            entry.append('ENTRY ADDED: {}'.format(timestamp))
 
             print(pars)
 

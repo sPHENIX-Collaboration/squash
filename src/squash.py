@@ -124,3 +124,14 @@ class Squash:
         cursor.execute(query)
 
         return cursor.fetchall()
+
+    @Decorators.check_connection
+    @Decorators.check_empty
+    def update_entry(self, columns, data, condition, table='data'):
+        cursor = self.connection.cursor()
+
+        fupdate = ','.join(['{} = ?'.format(k) for k in columns])
+        query = 'UPDATE {} SET {} {}'.format(table, fupdate, condition)
+        cursor.execute(query, tuple(data))
+
+        self.write()
