@@ -169,6 +169,8 @@ class SquashInterface:
         if self.results is None or self.selection is None:
             return
 
+        board = self.results[self.selection][1]
+
         mean, sigma, y, pars, _ = self.squash.object.parser(
             self.results[self.selection][0], output='signal'
         )
@@ -188,13 +190,18 @@ class SquashInterface:
             return
 
         if c_null is True and p_null is True:
+            boards = [(board,)] * y.shape[0]
             labels = list(zip(range(y.shape[0])))
 
             disp_opts['yrange'] = (0, 18000, 4000)
             disp_opts['interval'] = 5
             disp_opts['labels'] = ('pulse #', 'pulse maximum')
-            disp_opts['fmt_str'] = ['channel {}', '[{:.0f}, {:.0f}]']
-            disp_opts['fmt_data'] = [labels, pars.tolist()]
+            disp_opts['fmt_str'] = [
+                'board 0x{:02x}',
+                'channel {}',
+                '[{:.0f}, {:.0f}]',
+            ]
+            disp_opts['fmt_data'] = [boards, labels, pars.tolist()]
 
             draw_graph(y, None, **disp_opts)
         else:
@@ -203,11 +210,15 @@ class SquashInterface:
             disp_opts['labels'] = ('sample #', 'ADC value')
 
             if c_null is True:
-                disp_opts['fmt_str'] = ['channel {}']
-                disp_opts['fmt_data'] = [list(zip(range(mean.shape[1])))]
+                boards = [(board,)] * mean.shape[1]
+
+                disp_opts['fmt_str'] = ['board 0x{:02x}', 'channel {}']
+                disp_opts['fmt_data'] = [boards, list(zip(range(mean.shape[1])))]
             else:
-                disp_opts['fmt_str'] = ['pulse {}']
-                disp_opts['fmt_data'] = [list(zip(range(mean.shape[0])))]
+                boards = [(board,)] * mean.shape[0]
+
+                disp_opts['fmt_str'] = ['board 0x{:02x}', 'pulse {}']
+                disp_opts['fmt_data'] = [boards, list(zip(range(mean.shape[0])))]
 
             selection = p_slice, c_slice
 
