@@ -12,7 +12,13 @@ def read_and_discard_lines(f, count):
 
 
 def read_config_line(f):
-    return f.readline().strip().split(' ')[-1]
+    while True:
+        line = f.readline().strip()
+
+        if line != '':
+            break;
+
+    return line.split(' ')[-1]
 
 
 def split_dword(dword):
