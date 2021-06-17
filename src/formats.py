@@ -143,12 +143,15 @@ class DataFormat_v1(DataFormat):
 
                         y[j][i] = powerlaw_doubleexp(xmin, *popt)
                     except ValueError:
-                        # fit without errors (sigma = 0 if ADC is saturated)
-                        popt, pcov = fit_signal(mean, None, nsample, i, j,
-                            method='dogbox')
-                        xmin = fmin(min_form, 5, args=tuple(popt))
+                        try:
+                            # fit without errors (sigma = 0 if ADC is saturated)
+                            popt, pcov = fit_signal(mean, None, nsample, i, j,
+                                method='dogbox')
+                            xmin = fmin(min_form, 5, args=tuple(popt))
 
-                        y[j][i] = powerlaw_doubleexp(xmin, *popt)
+                            y[j][i] = powerlaw_doubleexp(xmin, *popt)
+                        except RuntimeError:
+                            pass
                     except RuntimeError:
                         pass
 
