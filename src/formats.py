@@ -150,6 +150,8 @@ class DataFormat_v1(DataFormat):
                             xmin = fmin(min_form, 5, args=tuple(popt))
 
                             y[j][i] = powerlaw_doubleexp(xmin, *popt)
+                        except np.linalg.LinAlgError:
+                            pass
                         except RuntimeError:
                             pass
                     except RuntimeError:
