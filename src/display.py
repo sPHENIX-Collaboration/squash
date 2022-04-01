@@ -15,6 +15,7 @@ def draw_graph(
     info=[0.08, 0.84, 0.09],
     fmt_str=None,
     fmt_data=None,
+    output=None,
 ):
     x = np.arange(0, vals.shape[-1], 1)
     y = vals.squeeze()
@@ -69,7 +70,10 @@ def draw_graph(
         except IndexError:
             pass
 
-    plt.show()
+    if output is None:
+        plt.show()
+    else:
+        plt.savefig(output)
 
 
 def draw_histogram(vals, bins, labels, xrange, yrange):
