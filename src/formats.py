@@ -2,6 +2,8 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+import os
+import sys
 
 import numpy as np
 from numpy.polynomial import Polynomial
@@ -67,7 +69,7 @@ class DataFormat_v1(DataFormat):
     def parser(self, raw, output='entry'):
         entry = [raw]
 
-        with open(raw, 'r') as fp:
+        with open(raw, 'r') as fp, open(os.devnull, 'w') as fn:
             entry.append(read_config_line(fp))
             entry.append(int(read_config_line(fp)))
 
@@ -116,7 +118,7 @@ class DataFormat_v1(DataFormat):
 
                     data[i, j] = channels
 
-                    # read and discard lines (16 unused channels)
+                    # read and discard lines (unused channels)
                     read_and_discard_lines(fp, back)
 
                     # read and discard 2 lines (unused, empty)
@@ -128,14 +130,35 @@ class DataFormat_v1(DataFormat):
             mean = np.mean(data, axis=1)
             sigma = np.std(data, axis=1)
 
+            rels = sigma / mean;
+
             x = np.arange(nstep)
             y = np.zeros((16, nstep))
 
             def min_form(x, *args):
                 return -powerlaw_doubleexp(x, *args)
 
+            def display_fit_error(message):
+                print(' [!] ERROR: [pulse: {}, channel: {}]'.format(i, j))
+                print('     {}'.format(message))
+
+            sys_stdout = sys.stdout
+            sys.stdout = fn
+
             for i in range(nstep):
                 for j in range(0, 16):
+                    if np.any(rels[i,j,:] > 0.1):
+                        display_fit_error('sigma/mu > 10%')
+                        continue
+
+                    if np.any(sigma == 0) and np.any(mean == 16384):
+                        display_fit_error('pulse saturated')
+                        continue
+
+                    if np.any(sigma == 0) and np.any(mean == 0):
+                        display_fit_error('pulse at 0')
+                        continue
+
                     try:
                         popt, pcov = fit_signal(mean, sigma, nsample, i, j,
                             method='dogbox')
@@ -143,19 +166,15 @@ class DataFormat_v1(DataFormat):
 
                         y[j][i] = powerlaw_doubleexp(xmin, *popt)
                     except ValueError:
-                        try:
-                            # fit without errors (sigma = 0 if ADC is saturated)
-                            popt, pcov = fit_signal(mean, None, nsample, i, j,
-                                method='dogbox')
-                            xmin = fmin(min_form, 5, args=tuple(popt))
-
-                            y[j][i] = powerlaw_doubleexp(xmin, *popt)
-                        except np.linalg.LinAlgError:
-                            pass
-                        except RuntimeError:
-                            pass
+                        display_fit_error('fit error (ValueError)')
+                        pass
+                    except np.linalg.LinAlgError:
+                        display_fit_error('fit error (np.linalg.LinAlgError)')
+                        pass
                     except RuntimeError:
                         pass
+
+            sys.stdout = sys_stdout
 
             pval = [1500, 375]
             bmin = [ 500, 275]
@@ -165,7 +184,11 @@ class DataFormat_v1(DataFormat):
             errs = np.zeros((0, 2))
 
             for i in range(y.shape[0]):
-                popt, pcov = curve_fit(linear, x[2:], y[i,2:], p0=pval,
+                i_valid = y[i,2:] != 0
+                x_valid = x[2:][i_valid]
+                y_valid = y[i,2:][i_valid]
+
+                popt, pcov = curve_fit(linear, x_valid, y_valid, p0=pval,
                     bounds=(bmin, bmax))
 
                 pars = np.vstack((pars, popt))
