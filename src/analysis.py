@@ -9,63 +9,32 @@ import numpy as np
 
 def analysis():
     data = [
-        'dat/board001_Channel0to15_20210310_InjectCharge.dat',
-        # 'dat/board001_Channel16to31_20210310_InjectCharge.dat',
-        # 'dat/board001_Channel32to47_20210310_InjectCharge.dat',
-        # 'dat/board001_Channel48to63_20210310_InjectCharge.dat',
-        # 'dat/board0x69_Channel0to15_20210311_InjectCharge.dat',
-        # 'dat/board0x69_Channel16to31_20210311_InjectCharge.dat',
-        # 'dat/board0x69_Channel32to47_20210311_InjectCharge.dat',
-        # 'dat/board0x69_Channel48to63_20210311_InjectCharge.dat',
         # 'dat/board0x70_Channel0to15_20210311_InjectCharge.dat',
         # 'dat/board0x70_Channel16to31_20210311_InjectCharge.dat',
         # 'dat/board0x70_Channel32to47_20210311_InjectCharge.dat',
         # 'dat/board0x70_Channel48to63_20210311_InjectCharge.dat',
-        # 'dat/board0x71_Channel0to15_20210310_InjectCharge.dat',
-        # 'dat/board0x71_Channel16to31_20210310_InjectCharge.dat',
-        # 'dat/board0x71_Channel32to47_20210310_InjectCharge.dat',
-        # 'dat/board0x71_Channel48to63_20210310_InjectCharge.dat',
-    ]
-
-    ref = [
-        'dat/board001_Channel0to15_20210310_NoCharge.dat',
-        # 'dat/board001_Channel16to31_20210310_NoCharge.dat',
-        # 'dat/board001_Channel32to47_20210310_NoCharge.dat',
-        # 'dat/board001_Channel48to63_20210310_NoCharge.dat',
-        # 'dat/board0x69_Channel0to15_20210311_NoCharge.dat',
-        # 'dat/board0x69_Channel16to31_20210311_NoCharge.dat',
-        # 'dat/board0x69_Channel32to47_20210311_NoCharge.dat',
-        # 'dat/board0x69_Channel48to63_20210311_NoCharge.dat',
-        # 'dat/board0x70_Channel0to15_20210311_NoCharge.dat',
-        # 'dat/board0x70_Channel16to31_20210311_NoCharge.dat',
-        # 'dat/board0x70_Channel32to47_20210311_NoCharge.dat',
-        # 'dat/board0x70_Channel48to63_20210311_NoCharge.dat',
-        # 'dat/board0x71_Channel0to15_20210310_NoCharge.dat',
-        # 'dat/board0x71_Channel16to31_20210310_NoCharge.dat',
-        # 'dat/board0x71_Channel32to47_20210310_NoCharge.dat',
-        # 'dat/board0x71_Channel48to63_20210310_NoCharge.dat',
     ]
 
     squash = factory['auto']()
 
-    # bases = []
+    # pedes = []
     # gains = []
 
     # for group in zip(*[iter(data)] * 4):
     #     for f in group:
-    #         _, _, _, _, coefs = squash.parser(f, output='signal')
+    #         _, _, _, pars, _ = squash.parser(f, output='signal')
 
-    #         bases.append(coefs[:,0])
-    #         gains.append(coefs[:,1])
+    #         pedes.append(pars[:,0])
+    #         gains.append(pars[:,1])
 
-    # np_bases = np.concatenate(bases)
+    # np_pedes = np.concatenate(pedes)
     # np_gains = np.concatenate(gains)
 
-    # # print(np_bases)
+    # # print(np_pedes)
     # # print(np_gains)
 
     # # distribution of pedestals
-    # draw_histogram(np_bases, 50, labels=('pedestal', 'counts'),
+    # draw_histogram(np_pedes, 50, labels=('pedestal', 'counts'),
     #     xrange=(1300, 1800, 100), yrange=(0, 50, 5))
 
     # # distribution of gains
@@ -74,110 +43,98 @@ def analysis():
 
     ###########################################################################
 
-    bases = []
-    gains = []
-
     for group in zip(*[iter(data)] * 1):
-        bases.append([])
-        gains.append([])
+        board_id = 'BOARDID'
+
+        _m = np.zeros((40, 0, 28))
+        _s = np.zeros((40, 0, 28))
+        _y = np.zeros((0, 40))
+        _p = np.zeros((0, 2))
+        _e = np.zeros((0, 2))
 
         for f in group:
-            _, _, _, _, coefs = squash.parser(f, output='signal')
+            mean, sigma, y, pars, errs = squash.parser(f, output='signal')
 
-            # print(pars)
-            # print(errs)
+            _m = np.concatenate((_m, mean), axis=1)
+            _s = np.concatenate((_s, sigma), axis=1)
+            _y = np.vstack((_y, y))
+            _p = np.vstack((_p, pars))
+            _e = np.vstack((_e, errs))
 
-            bases[-1].extend(coefs[:,0])
-            gains[-1].extend(coefs[:,1])
+        yp = np.array(_p[:,0])
+        yg = np.array(_p[:,1])
 
-    fmt_str = ['board {}']
-    fmt_data = [('001',), ('0x69',), ('0x70',), ('0x71',)]
+        # ---------------------------------------------------------------------
+        # draw pulse maximum vs steps
+        pulse_max_vs_step_disp_opts = {
+            'yrange': (0, 18000, 4000),
+            'interval': 4,
+            'labels': ('pulse #', 'pulse maximum'),
+            'fmt_str': [
+                'board {}',
+                'channel {}',
+                '[{:.0f}, {:.0f}]',
+            ],
+            'fmt_data': [
+                [(board_id,)] * _y.shape[0],
+                list(zip(range(_y.shape[0]))),
+                pars.tolist(),
+            ],
+            'output': 'pulse_max_vs_step_board_{}'.format(board_id),
+        }
 
-    # y = np.array(bases)
-    y = np.array(gains)
+        draw_graph(_y, None, **pulse_max_vs_step_disp_opts)
 
-    # draw_graph(y, None, (1200, 1800, 100), 4, ('channel', 'pedestal'),
-    #     fmt_str=fmt_str, fmt_data=fmt_data)
-    draw_graph(y, None, (80, 120, 5), 4, ('channel', 'gain'),
-        fmt_str=fmt_str, fmt_data=fmt_data)
+        # ---------------------------------------------------------------------
+        # draw pulse shapes for all steps for a single channel
+        pulse_vs_sample_disp_opts = {
+            'yrange': (0, 18000, 4000),
+            'interval': 4,
+            'labels': ('sample #', 'ADC value'),
+            'fmt_str': [
+                'board {}',
+                'channel {}',
+                'pulse {}',
+            ],
+            'fmt_data': [
+                [(board_id,)] * _m.shape[0],
+                None,
+                list(zip(range(_m.shape[0]))),
+            ],
+            'output': None,
+        }
 
-    ###########################################################################
+        for c in range(_m.shape[1]):
+            pulse_vs_sample_disp_opts['fmt_data'][1] = [(c,)] * _m.shape[0]
+            pulse_vs_sample_disp_opts['output'] = \
+                'pulse_vs_sample_board_{}_channel_{}.png'.format(board_id, c)
+            draw_graph(_m[:,c,:], sigma[:,c,:], **pulse_vs_sample_disp_opts)
 
-    # refstd = []
+        # ---------------------------------------------------------------------
+        # draw pedestal vs channel
+        pedestal_vs_channel_disp_opts = {
+            'yrange': (0, 2000, 200),
+            'interval': 4,
+            'labels': ('channel', 'pedestal'),
+            'fmt_str': ['board {}'],
+            'fmt_data': [(board_id,)],
+            'output': 'pedestal_vs_channel_board_{}'.format(board_id),
+        }
 
-    # for group in zip(*[iter(ref)] * 4):
-    #     refstd.append([])
+        draw_graph(yp, None, **pedestal_vs_channel_disp_opts)
 
-    #     for f in group:
-    #         raw = squash.parser(f, output='raw')
+        # ---------------------------------------------------------------------
+        # draw gain vs channel
+        gain_vs_channel_disp_opts = {
+            'yrange': (0, 400, 50),
+            'interval': 4,
+            'labels': ('channel', 'gain'),
+            'fmt_str': ['board {}'],
+            'fmt_data': [(board_id,)],
+            'output': 'gain_vs_channel_board_{}'.format(board_id),
+        }
 
-    #         for i in range(16):
-    #             channel = raw[:,:,i,:].flatten()
-
-    #             refstd[-1].append(np.std(channel).item())
-
-    # y = np.array(refstd)
-
-    # print(y)
-
-    # fmt_str = ['board {}']
-    # fmt_data = [('001',), ('0x69',), ('0x70',), ('0x71',)]
-
-    # draw_graph(y, None, (0, 20, 2), 4, ('channel', 'std(pedestal)'),
-    #     fmt_str=fmt_str, fmt_data=fmt_data)
-
-    # # distribution of rms values for ref data
-    # draw_histogram(np_refstd, 20, labels=('std(ADC)', 'counts'),
-    #     xrange=(0, 20, 2), yrange=(0, 60, 10))
-
-    # # example distribution for ref data (1 channel)
-    # raw = squash.parser(ref[0], output='raw')
-
-    # np_channel = raw[:,:,4,:].flatten()
-
-    # draw_histogram(np_channel, 100, labels=('ADC', 'counts'),
-    #     xrange=(1500, 1600, 20), yrange=(0, 32000, 4000))
-
-    # # plot residuals
-    # _, _, integral, quadsums, coefs = squash.parser(data[0], output='signal')
-
-    # x = np.arange(0, integral.shape[-1], 1)
-    # y = integral[0]
-    # yerr = quadsums[0]
-
-    # residuals = y - (coefs[0][0] + x * coefs[0][1])
-
-    # print(residuals)
-
-    # plt.figure()
-
-    # axs = plt.gca()
-    # axs.set_xlim(-0.5, 40)
-    # axs.set_ylim(-50, 50)
-    # axs.xaxis.set_ticks(range(0, 40, 4))
-    # axs.yaxis.set_ticks(range(-50, 50, 10))
-    # axs.set_xlabel('sample #')
-    # axs.set_ylabel('residuals')
-
-    # plt.errorbar(x, residuals, yerr=yerr, fmt='o')
-    # plt.show()
-
-    # mean, sigma, _, _, _ = squash.parser(f, output='signal')
-
-    # disp_opts['yrange'] = (1500, 1600, 10)
-    # disp_opts['interval'] = 4
-    # disp_opts['labels'] = ('sample #', 'ADC value')
-
-    # if c_null is True:
-    #     disp_opts['fmt_str'] = ['channel {}']
-    #     disp_opts['fmt_data'] = [list(zip(range(mean.shape[1])))]
-    # else:
-    #     disp_opts['fmt_str'] = ['pulse {}']
-    #     disp_opts['fmt_data'] = [list(zip(range(mean.shape[0])))]
-
-    # selection = p_slice, c_slice
-
-    # draw_graph(mean[selection], sigma[selection], **disp_opts)
+        draw_graph(yg, None, **gain_vs_channel_disp_opts)
 
 
 if __name__ == '__main__':
