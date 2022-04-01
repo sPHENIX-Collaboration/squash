@@ -54,7 +54,7 @@ class DataFormat(ABC):
 class DataFormat_v1(DataFormat):
     structure = {
         'label': 'TEXT',
-        'board': 'INTEGER',
+        'board': 'TEXT',
         'offset': 'INTEGER',
         'nstep': 'INTEGER',
         'nstep_event': 'INTEGER',
@@ -68,7 +68,7 @@ class DataFormat_v1(DataFormat):
         entry = [raw]
 
         with open(raw, 'r') as fp:
-            entry.append(int(read_config_line(fp), 16))
+            entry.append(read_config_line(fp))
             entry.append(int(read_config_line(fp)))
 
             read_and_discard_lines(fp, 4)

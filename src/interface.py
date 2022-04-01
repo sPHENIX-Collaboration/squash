@@ -198,7 +198,7 @@ class SquashInterface:
             disp_opts['interval'] = 5
             disp_opts['labels'] = ('pulse #', 'pulse maximum')
             disp_opts['fmt_str'] = [
-                'board 0x{:02x}',
+                'board {}',
                 'channel {}',
                 '[{:.0f}, {:.0f}]',
             ]
@@ -214,13 +214,13 @@ class SquashInterface:
                 boards = [(board,)] * mean.shape[1]
                 channels = list(zip(range(offset, offset + mean.shape[1])))
 
-                disp_opts['fmt_str'] = ['board 0x{:02x}', 'channel {}']
+                disp_opts['fmt_str'] = ['board {}', 'channel {}']
                 disp_opts['fmt_data'] = [boards, channels]
             else:
                 boards = [(board,)] * mean.shape[0]
                 pulses = list(zip(range(mean.shape[0])))
 
-                disp_opts['fmt_str'] = ['board 0x{:02x}', 'pulse {}']
+                disp_opts['fmt_str'] = ['board {}', 'pulse {}']
                 disp_opts['fmt_data'] = [boards, pulses]
 
             selection = p_slice, c_slice
