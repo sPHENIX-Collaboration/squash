@@ -185,8 +185,13 @@ class DataFormat_v1(DataFormat):
 
             for i in range(y.shape[0]):
                 i_valid = y[i,2:] != 0
-                x_valid = x[2:][i_valid]
-                y_valid = y[i,2:][i_valid]
+
+                if np.count_nonzero(i_valid) > 1:
+                    x_valid = x[2:][i_valid]
+                    y_valid = y[i,2:][i_valid]
+                else:
+                    x_valid = x[2:]
+                    y_valid = y[i,2:]
 
                 popt, pcov = curve_fit(linear, x_valid, y_valid, p0=pval,
                     bounds=(bmin, bmax))
