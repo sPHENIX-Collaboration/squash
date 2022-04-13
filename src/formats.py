@@ -55,22 +55,32 @@ class DataFormat(ABC):
 
 class DataFormat_v1(DataFormat):
     structure = {
-        'label': 'TEXT',
-        'board': 'TEXT',
+        'serial': 'TEXT',
+        'id': 'TEXT',
         'offset': 'INTEGER',
         'nstep': 'INTEGER',
         'nstep_event': 'INTEGER',
         'nstep_data': 'INTEGER',
         'nsample': 'INTEGER',
-        'coefs': 'TEXT',
-        'info': 'TEXT',
+        'pedes': 'TEXT',
+        'gains': 'TEXT',
+        'location': 'TEXT',
+        'history': 'TEXT',
+        'comment': 'TEXT',
+        'status': 'TEXT',
+        'files': 'TEXT',
+        'install': 'TEXT',
     }
 
-    def parser(self, raw, output='entry'):
-        entry = { 'label': raw, }
+    def parser(self, raw, callback=None):
+        entry = {}
+
+        files = [''] * 4
+        pedes = np.zeros((64, 2))
+        gains = np.zeros((64, 2))
 
         with open(raw, 'r') as fp, open(os.devnull, 'w') as fn:
-            entry['board'] = read_config_line(fp)
+            entry['serial'] = read_config_line(fp)
             entry['offset'] = int(read_config_line(fp))
 
             read_and_discard_lines(fp, 4)
@@ -85,8 +95,12 @@ class DataFormat_v1(DataFormat):
 
             group = offset // 16
 
+            files[group] = raw
+
             front = group * nsample
             back = (3 - group) * nsample
+
+            entry['files'] = ', '.join(files)
 
             data = np.zeros((nstep, ntrial, 16, nsample))
 
@@ -124,8 +138,8 @@ class DataFormat_v1(DataFormat):
                     # read and discard 2 lines (unused, empty)
                     read_and_discard_lines(fp, 2)
 
-            if output == 'raw':
-                return data
+                if callback is not None:
+                    callback(i * 50 / nstep)
 
             mean = np.mean(data, axis=1)
             sigma = np.std(data, axis=1)
@@ -174,6 +188,9 @@ class DataFormat_v1(DataFormat):
                     except RuntimeError:
                         pass
 
+                if callback is not None:
+                    callback(50 + (i * 50 / nstep))
+
             sys.stdout = sys_stdout
 
             pval = [1500, 375]
@@ -199,17 +216,26 @@ class DataFormat_v1(DataFormat):
                 pars = np.vstack((pars, popt))
                 errs = np.vstack((errs, np.sqrt(np.diag(pcov))))
 
-            entry['coefs'] = np.array_repr(pars) + '###' + np.array_repr(errs)
+            i_min = offset
+            i_max = offset + 16
 
-            timestamp = datetime.today().strftime('%y%m%d-%H:%M:%S')
-            entry['info'] = 'ENTRY ADDED: {}'.format(timestamp)
+            pedes[i_min:i_max,0] = pars[:,0]
+            pedes[i_min:i_max,1] = errs[:,0]
+            gains[i_min:i_max,0] = pars[:,1]
+            gains[i_min:i_max,1] = errs[:,1]
 
-            print(pars)
+            entry['pedes'] = np.array_repr(pedes)
+            entry['gains'] = np.array_repr(gains)
 
-            if output == 'signal':
-                return mean, sigma, y, pars, errs
+        timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
-        return entry
+        entry['history'] = 'UPDATE: ({}:{}) [{}]'.format(
+            i_min, i_max - 1, timestamp)
+        entry['comment'] = ''
+        entry['status'] = '??'
+        entry['install'] = ''
+
+        return entry, mean, sigma, y, pars, errs
 
 
 factory = {

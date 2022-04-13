@@ -12,31 +12,51 @@ def draw_graph(
     yrange,
     interval,
     labels,
-    info=[0.08, 0.84, 0.09],
+    xscale=(0, 1),
+    info=[0.08, 0.84, 0.09, 'left'],
+    layout=None,
+    canvas=(4.0, 3.0),
+    margins=(0.8, 0.5, 0.5, 0.5),
     fmt_str=None,
     fmt_data=None,
-    output=None,
+    output=True,
 ):
-    x = np.arange(0, vals.shape[-1], 1)
+    x = xscale[0] + np.arange(0, vals.shape[-1], 1) * xscale[1]
     y = vals.squeeze()
     yerr = errs.squeeze() if errs is not None else [None] * vals.shape[-1]
 
     if y.ndim == 1:
         y = np.expand_dims(y, axis=0)
 
-    rows = int(math.sqrt(y.shape[0]))
-    cols = math.ceil(y.shape[0] / rows)
+    if layout is None:
+        rows = int(math.sqrt(y.shape[0]))
+        cols = math.ceil(y.shape[0] / rows)
+    else:
+        cols, rows = dims
 
-    fig, axs = plt.subplots(
+    fig = plt.figure()
+
+    plotw = canvas[0] * cols
+    ploth = canvas[1] * rows
+
+    figw = plotw + margins[0] + margins[1]
+    figh = ploth + margins[2] + margins[3]
+
+    left = margins[0] / figw
+    right = (figw - margins[1]) / figw
+    top = (figh - margins[2]) / figh
+    bottom = margins[3] / figh
+
+    axs = fig.subplots(
         rows,
         cols,
         sharex=True,
         sharey=True,
-        figsize=(cols * 2.0, rows * 1.6),
         squeeze=False,
     )
 
-    fig.subplots_adjust(wspace=0, hspace=0)
+    fig.set_size_inches((figw, figh))
+    fig.subplots_adjust(left, bottom, right, top, wspace=0, hspace=0)
 
     for (i, j), ax in np.ndenumerate(axs):
         if i == rows - 1:
@@ -56,7 +76,7 @@ def draw_graph(
             ax.errorbar(x, y[i], yerr=yerr[i], fmt='bo', markersize=1.0)
 
             if fmt_str is not None and fmt_data is not None:
-                xinfo, yinfo, hinfo = info
+                xinfo, yinfo, hinfo, xalign = info
 
                 for f_str, f_data in zip(fmt_str, fmt_data):
                     ax.annotate(
@@ -64,16 +84,20 @@ def draw_graph(
                         xy=(xinfo, yinfo),
                         xycoords='axes fraction',
                         fontsize=8,
+                        ha=xalign,
                     )
 
                     yinfo -= hinfo
         except IndexError:
             pass
 
-    if output is None:
-        plt.show()
-    else:
-        plt.savefig(output)
+    if isinstance(output, str):
+        fig.savefig(output)
+        plt.close(fig)
+    elif output is True:
+        fig.show()
+    elif output is None:
+        return fig
 
 
 def draw_histogram(vals, bins, labels, xrange, yrange):

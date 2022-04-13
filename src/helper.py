@@ -37,21 +37,22 @@ class SquashHelper:
 
         self.squash.insert_table(structure, self.table)
 
-    def insert(self, raw):
-        keys, values = zip(*self.object.parser(raw).items())
-        self.squash.insert_entry(keys, values, self.table)
+    def label(self, data):
+        structure = self.object.structure
 
-    def select(self, column='*', condition=''):
-        return self.squash.select_entry(column, condition, self.table)
+        if not formats.DataFormat.verify(structure):
+            raise formats.DataTypeError(self.version)
+
+        return { v: data[i] for i, v in enumerate(structure.keys()) }
+
+    def parse(self, raw, **kwargs):
+        return self.object.parser(raw, **kwargs)
+
+    def insert(self, columns, data):
+        return self.squash.insert_entry(columns, data, self.table)
 
     def update(self, columns, data, condition):
         return self.squash.update_entry(columns, data, condition, self.table)
 
-    def append(self, columns, data, condition):
-        entry = [self.select(c, condition)[0][0] for c in columns]
-
-        if not all(isinstance(v, str) for v in entry):
-            raise TypeError('append operation is supported only for strings')
-
-        values = list(map(operator.add, entry, map(str, data)))
-        self.update(columns, values, condition)
+    def select(self, condition=''):
+        return self.squash.select_entry('*', condition, self.table)

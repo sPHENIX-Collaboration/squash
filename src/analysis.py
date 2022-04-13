@@ -22,7 +22,7 @@ def analysis():
 
     # for group in zip(*[iter(data)] * 4):
     #     for f in group:
-    #         _, _, _, pars, _ = squash.parser(f, output='signal')
+    #         _, _, _, _, pars, _ = squash.parser(f)
 
     #         pedes.append(pars[:,0])
     #         gains.append(pars[:,1])
@@ -44,7 +44,8 @@ def analysis():
     ###########################################################################
 
     for group in zip(*[iter(data)] * 1):
-        board_id = 'BOARDID'
+        serial = None
+        offset = None
 
         _m = np.zeros((40, 0, 28))
         _s = np.zeros((40, 0, 28))
@@ -53,7 +54,15 @@ def analysis():
         _e = np.zeros((0, 2))
 
         for f in group:
-            mean, sigma, y, pars, errs = squash.parser(f, output='signal')
+            entry, mean, sigma, y, pars, errs = squash.parser(f)
+
+            if serial is None and offset is None:
+                serial = entry['serial']
+                offset = entry['offset']
+            elif serial != entry['serial']:
+                print(' [!] WARNING: multiple serial numbers in a group.')
+            elif offset >= entry['offset']:
+                print(' [!] WARNING: channel numbers will be wrong.')
 
             _m = np.concatenate((_m, mean), axis=1)
             _s = np.concatenate((_s, sigma), axis=1)
@@ -64,23 +73,28 @@ def analysis():
         yp = np.array(_p[:,0])
         yg = np.array(_p[:,1])
 
+        c_min = offset
+        c_max = offset + _y.shape[0]
+
         # ---------------------------------------------------------------------
         # draw pulse maximum vs steps
         pulse_max_vs_step_disp_opts = {
             'yrange': (0, 18000, 4000),
             'interval': 4,
             'labels': ('pulse #', 'pulse maximum'),
+            'canvas': (2.0, 1.5),
             'fmt_str': [
                 'board {}',
                 'channel {}',
                 '[{:.0f}, {:.0f}]',
             ],
             'fmt_data': [
-                [(board_id,)] * _y.shape[0],
-                list(zip(range(_y.shape[0]))),
+                [(serial,)] * _y.shape[0],
+                list(zip(range(c_min, c_max))),
                 pars.tolist(),
             ],
-            'output': 'pulse_max_vs_step_board_{}'.format(board_id),
+            'output': 'pulse_max_vs_step_board_{}_channel_{}_to_{}'.format(
+                serial, c_min, c_max - 1),
         }
 
         draw_graph(_y, None, **pulse_max_vs_step_disp_opts)
@@ -91,34 +105,39 @@ def analysis():
             'yrange': (0, 18000, 4000),
             'interval': 4,
             'labels': ('sample #', 'ADC value'),
+            'info': [0.92, 0.84, 0.09, 'right'],
+            'canvas': (2.0, 1.5),
             'fmt_str': [
                 'board {}',
                 'channel {}',
                 'pulse {}',
             ],
             'fmt_data': [
-                [(board_id,)] * _m.shape[0],
+                [(serial,)] * _m.shape[0],
                 None,
                 list(zip(range(_m.shape[0]))),
             ],
             'output': None,
         }
 
-        for c in range(_m.shape[1]):
+        for i in range(_m.shape[1]):
+            c = i + offset
+
             pulse_vs_sample_disp_opts['fmt_data'][1] = [(c,)] * _m.shape[0]
             pulse_vs_sample_disp_opts['output'] = \
-                'pulse_vs_sample_board_{}_channel_{}.png'.format(board_id, c)
-            draw_graph(_m[:,c,:], sigma[:,c,:], **pulse_vs_sample_disp_opts)
+                'pulse_vs_sample_board_{}_channel_{}.png'.format(serial, c)
+            draw_graph(_m[:,i,:], _s[:,i,:], **pulse_vs_sample_disp_opts)
 
         # ---------------------------------------------------------------------
         # draw pedestal vs channel
         pedestal_vs_channel_disp_opts = {
-            'yrange': (0, 2000, 200),
-            'interval': 4,
+            'yrange': (0, 2500, 200),
+            'interval': 1,
             'labels': ('channel', 'pedestal'),
+            'xscale': (c_min, 1),
             'fmt_str': ['board {}'],
-            'fmt_data': [(board_id,)],
-            'output': 'pedestal_vs_channel_board_{}'.format(board_id),
+            'fmt_data': [[(serial,)]],
+            'output': 'pedestal_vs_channel_board_{}'.format(serial),
         }
 
         draw_graph(yp, None, **pedestal_vs_channel_disp_opts)
@@ -126,12 +145,13 @@ def analysis():
         # ---------------------------------------------------------------------
         # draw gain vs channel
         gain_vs_channel_disp_opts = {
-            'yrange': (0, 400, 50),
-            'interval': 4,
+            'yrange': (0, 500, 50),
+            'interval': 1,
             'labels': ('channel', 'gain'),
+            'xscale': (c_min, 1),
             'fmt_str': ['board {}'],
-            'fmt_data': [(board_id,)],
-            'output': 'gain_vs_channel_board_{}'.format(board_id),
+            'fmt_data': [[(serial,)]],
+            'output': 'gain_vs_channel_board_{}'.format(serial),
         }
 
         draw_graph(yg, None, **gain_vs_channel_disp_opts)
