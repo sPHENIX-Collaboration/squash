@@ -67,21 +67,21 @@ class DataFormat_v1(DataFormat):
     }
 
     def parser(self, raw, output='entry'):
-        entry = [raw]
+        entry = { 'label': raw, }
 
         with open(raw, 'r') as fp, open(os.devnull, 'w') as fn:
-            entry.append(read_config_line(fp))
-            entry.append(int(read_config_line(fp)))
+            entry['board'] = read_config_line(fp)
+            entry['offset'] = int(read_config_line(fp))
 
             read_and_discard_lines(fp, 4)
 
-            for _ in range(4):
-                entry.append(int(read_config_line(fp)))
+            for key in ('nstep', 'nstep_event', 'nstep_data', 'nsample'):
+                entry[key] = int(read_config_line(fp))
 
-            offset = entry[2]
-            nstep = entry[3]
-            ntrial = entry[4]
-            nsample = entry[6]
+            offset = entry['offset']
+            nstep = entry['nstep']
+            ntrial = entry['nstep_event']
+            nsample = entry['nsample']
 
             group = offset // 16
 
@@ -199,10 +199,10 @@ class DataFormat_v1(DataFormat):
                 pars = np.vstack((pars, popt))
                 errs = np.vstack((errs, np.sqrt(np.diag(pcov))))
 
-            entry.append(str(pars) + str(errs))
+            entry['coefs'] = np.array_repr(pars) + '###' + np.array_repr(errs)
 
             timestamp = datetime.today().strftime('%y%m%d-%H:%M:%S')
-            entry.append('ENTRY ADDED: {}'.format(timestamp))
+            entry['info'] = 'ENTRY ADDED: {}'.format(timestamp)
 
             print(pars)
 

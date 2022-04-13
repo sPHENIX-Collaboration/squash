@@ -38,10 +38,11 @@ class SquashHelper:
         self.squash.insert_table(structure, self.table)
 
     def insert(self, raw):
-        self.squash.insert_entry(raw, self.object.parser)
+        keys, values = zip(*self.object.parser(raw).items())
+        self.squash.insert_entry(keys, values, self.table)
 
     def select(self, column='*', condition=''):
-        return self.squash.select_entry(self.table, column, condition)
+        return self.squash.select_entry(column, condition, self.table)
 
     def update(self, columns, data, condition):
         return self.squash.update_entry(columns, data, condition, self.table)

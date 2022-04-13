@@ -96,11 +96,12 @@ class Squash:
 
     @Decorators.check_connection
     @Decorators.check_empty
-    def insert_entry(self, raw, parser, table='data'):
+    def insert_entry(self, columns, data, table='data'):
         cursor = self.connection.cursor()
 
-        fvalues = ', '.join(repr(c) for c in parser(raw))
-        query = 'INSERT INTO {} VALUES ({})'.format(table, fvalues)
+        fcolumns = ', '.join(columns)
+        fdata = ', '.join(repr(d) for d in data)
+        query = 'INSERT INTO {} ({}) VALUES ({})'.format(table, fcolumns, fdata)
         cursor.execute(query)
 
         self.write()
@@ -117,7 +118,7 @@ class Squash:
 
     @Decorators.check_connection
     @Decorators.check_empty
-    def select_entry(self, table='data', column='*', condition=''):
+    def select_entry(self, column, condition, table='data'):
         cursor = self.connection.cursor()
 
         query = 'SELECT {} FROM {} {}'.format(column, table, condition)
