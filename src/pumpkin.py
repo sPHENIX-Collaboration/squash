@@ -177,6 +177,17 @@ class SquashInterface:
 
         self.layout_display(self.mode, self.state)
 
+    def clear_figure(self):
+        if self.fig is None:
+            return
+
+        plt.close(self.fig)
+
+        self.canvas.get_tk_widget().pack_forget()
+
+        self.fig = None
+        self.canvas = None
+
     def clear_action_group(self):
         self.e_text.delete(0, tk.END)
         self.e_text.grid_forget()
@@ -212,13 +223,7 @@ class SquashInterface:
             self.clear_action_group()
 
         if state is not SIStates.UPDATE:
-            if self.fig is not None:
-                plt.close(self.fig)
-
-                self.canvas.get_tk_widget().pack_forget()
-
-                self.fig = None
-                self.canvas = None
+            self.clear_figure()
 
         if self.state is SIStates.INSERT:
             self.clear_record_group()
@@ -382,6 +387,8 @@ class SquashInterface:
             return
 
         if self.state is SIStates.UPDATE:
+            self.clear_figure()
+
             self.update_database_entry(text)
             return
 
