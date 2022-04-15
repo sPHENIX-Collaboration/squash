@@ -102,24 +102,17 @@ class SquashInterface:
 
         self.b_power = ttk.Button(self.frame, text='power', width=6)
 
-        self.b_insert = ttk.Button(
-            self.frame, text='insert', width=6, command=self.on_click_insert
-        )
-        self.b_update = ttk.Button(
-            self.frame, text='update', width=6, command=self.on_click_update
-        )
-        self.b_select = ttk.Button(
-            self.frame, text='select', width=6, command=self.on_click_select
-        )
+        self.b_insert = ttk.Button(self.frame, text='insert', width=6)
+        self.b_insert['command'] = self.on_click_insert
+        self.b_update = ttk.Button(self.frame, text='update', width=6)
+        self.b_update['command'] = self.on_click_update
+        self.b_select = ttk.Button(self.frame, text='select', width=6)
+        self.b_select['command'] = self.on_click_select
 
-        self.l_serial = ttk.Label(
-            self.f_box, text='serial #:', anchor='e', width=8
-        )
+        self.l_serial = ttk.Label(self.f_box, text='serial #:', anchor='e', width=8)
         self.e_serial = ttk.Entry(self.f_box, width=12)
 
-        self.l_location = ttk.Label(
-            self.f_box, text='location:', anchor='e', width=8
-        )
+        self.l_location = ttk.Label(self.f_box, text='location:', anchor='e', width=8)
         self.e_location = ttk.Combobox(self.f_box, state=['readonly'], width=12)
         self.e_location['values'] = (
             '  UC Boulder',
@@ -129,14 +122,10 @@ class SquashInterface:
         )
         self.e_location.set('  UC Boulder')
 
-        self.l_comment = ttk.Label(
-            self.f_box, text='comment:', anchor='e', width=8
-        )
+        self.l_comment = ttk.Label(self.f_box, text='comment:', anchor='e', width=8)
         self.e_comment = ttk.Entry(self.f_box, width=12)
 
-        self.l_status = ttk.Label(
-            self.f_box, text='status:', anchor='e', width=8
-        )
+        self.l_status = ttk.Label(self.f_box, text='status:', anchor='e', width=8)
         self.s_calib = ttk.Spinbox(self.f_box, state=['readonly'], width=12)
         self.s_calib['values'] = (' G/P: ?', ' G/P: P', ' G/P: F')
         self.s_token = ttk.Spinbox(self.f_box, state=['readonly'], width=12)
@@ -144,10 +133,9 @@ class SquashInterface:
 
         self.b_record = ttk.Button(self.f_box, text='record', width=8)
 
-        self.t_info = ttk.Treeview(
-            self.f_box, columns=['info'], selectmode='browse'
-        )
-        self.t_info.column('#0', width=108)
+        self.t_info = ttk.Treeview(self.f_box, selectmode='browse')
+        self.t_info['columns'] = ['info']
+        self.t_info.column('#0', width=96)
         self.t_info.heading('info', text='...')
         self.t_info.tag_configure('edit', foreground='red')
         self.t_info.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
