@@ -400,37 +400,7 @@ class SquashInterface:
         comment = self.e_comment.get().strip()
         status = self.s_calib.get()[-1] + self.s_token.get()[-1]
 
-        timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
-
-        entry = self.squash.label(self.results[self.index])
-
-        def _update_string(text, fmt_str, fmt_data, sep):
-            if not fmt_data[0]:
-                return text
-
-            parts = [x for x in text.split(sep) if x]
-            parts.append(fmt_str.format(*fmt_data))
-
-            return sep.join(parts)
-
-        if entry['location'].split(', ')[-1].startswith(location):
-            location = ''
-
-        entry['location'] = _update_string(
-            entry['location'], '{} [{}]', [location, timestamp], ', '
-        )
-        entry['comment'] = _update_string(
-            entry['comment'], '{}', [comment], '; '
-        )
-        entry['history'] = _update_string(
-            entry['history'], 'EDIT [{}]', [timestamp], ', '
-        )
-
-        entry['status'] = status
-
-        condition = 'WHERE serial = {}'.format(repr(entry['serial']))
-
-        self.squash.update(*zip(*entry.items()), condition)
+        self.modify_database_entry([location, comment, status])
 
         query = self.query
 
@@ -627,6 +597,42 @@ class SquashInterface:
             self._insert(e_id, 'edit', 'edit', '', label='<edit>')
 
             self.set_progress(i * 100 / len(self.results))
+
+    @Decorators.show_progress
+    def modify_database_entry(self, data):
+        location, comment, status = data
+
+        timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
+
+        entry = self.squash.label(self.results[self.index])
+
+        def _update_string(text, fmt_str, fmt_data, sep):
+            if not fmt_data[0]:
+                return text
+
+            parts = [x for x in text.split(sep) if x]
+            parts.append(fmt_str.format(*fmt_data))
+
+            return sep.join(parts)
+
+        if entry['location'].split(', ')[-1].startswith(location):
+            location = ''
+
+        entry['location'] = _update_string(
+            entry['location'], '{} [{}]', [location, timestamp], ', '
+        )
+        entry['comment'] = _update_string(
+            entry['comment'], '{}', [comment], '; '
+        )
+        entry['history'] = _update_string(
+            entry['history'], 'EDIT [{}]', [timestamp], ', '
+        )
+
+        entry['status'] = status
+
+        condition = 'WHERE serial = {}'.format(repr(entry['serial']))
+
+        self.squash.update(*zip(*entry.items()), condition)
 
 
 if __name__ == '__main__':
