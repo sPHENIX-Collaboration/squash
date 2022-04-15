@@ -137,12 +137,12 @@ class SquashInterface:
         self.l_status = ttk.Label(
             self.f_box, text='status:', anchor='e', width=8
         )
-        self.s_calib = ttk.Spinbox(self.f_box, state=['readonly'], width=6)
+        self.s_calib = ttk.Spinbox(self.f_box, state=['readonly'], width=12)
         self.s_calib['values'] = (' G/P: ?', ' G/P: P', ' G/P: F')
-        self.s_token = ttk.Spinbox(self.f_box, state=['readonly'], width=6)
+        self.s_token = ttk.Spinbox(self.f_box, state=['readonly'], width=12)
         self.s_token['values'] = (' TP: ?', ' TP: P', ' TP: F')
 
-        self.b_record = ttk.Button(self.f_box, text='record', width=6)
+        self.b_record = ttk.Button(self.f_box, text='record', width=8)
 
         self.t_info = ttk.Treeview(
             self.f_box, columns=['info'], selectmode='browse'
