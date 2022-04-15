@@ -25,9 +25,9 @@ class SIModes(Enum):
 
 class SIStates(Enum):
     NONE = 0
-    INSERT = 3
-    UPDATE = 4
-    SELECT = 5
+    INSERT = 1
+    UPDATE = 2
+    SELECT = 3
 
 
 class SquashInterface:
