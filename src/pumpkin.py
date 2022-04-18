@@ -92,7 +92,7 @@ class SquashInterface:
             mode='determinate',
         )
 
-        self.anchor = ttk.Label(self.frame, width=6)
+        self.anchor = ttk.Label(self.frame, width=6, anchor='center')
 
     def init_widgets(self):
         self.b_action = ttk.Button(self.frame, text='action', width=6)
@@ -158,10 +158,10 @@ class SquashInterface:
         )
 
         self.p_bar.grid(
-            column=0, row=8, columnspan=7, rowspan=1, padx=8, sticky='we'
+            column=1, row=8, columnspan=6, rowspan=1, padx=8, sticky='we'
         )
 
-        self.anchor.grid(column=6, row=7, padx=4)
+        self.anchor.grid(column=0, row=8, padx=4, sticky='we')
 
         self.layout_display(self.mode, self.state)
 
@@ -197,6 +197,8 @@ class SquashInterface:
         self.b_record.grid_forget()
 
     def clear_display(self, mode, state):
+        self.reset_notification()
+
         if mode is SIModes.NONE:
             self.clear_action_group()
 
@@ -317,6 +319,12 @@ class SquashInterface:
         if state is not None:
             self.state = state
 
+    def reset_notification(self):
+        self.anchor['text'] = ''
+
+    def set_notify_warning(self):
+        self.anchor['text'] = '⚠'
+
     class Decorators:
         @classmethod
         def reset_progress(cls, f):
@@ -359,13 +367,15 @@ class SquashInterface:
         self.layout_display(None, SIStates.UPDATE)
 
     def on_carriage_return(self, event=None):
+        self.reset_notification()
+
         text = self.e_text.get().strip()
 
         if self.mode is SIModes.OPEN:
             try:
                 self.open_database_file(text)
             except FileNotFoundError:
-                pass
+                self.set_notify_warning()
             else:
                 self.layout_display(SIModes.ACTIVE, SIStates.NONE)
             return
@@ -377,7 +387,10 @@ class SquashInterface:
         if self.state is SIStates.UPDATE:
             self.clear_figure()
 
-            self.update_database_entry(text)
+            try:
+                self.update_database_entry(text)
+            except FileNotFoundError:
+                self.set_notify_warning()
             return
 
     def on_click_browse(self):
