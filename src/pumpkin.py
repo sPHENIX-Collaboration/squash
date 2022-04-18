@@ -81,7 +81,7 @@ class SquashInterface:
         self.f_box = ttk.Frame(self.frame, relief='groove')
 
         self.f_box.columnconfigure(2, weight=1)
-        self.f_box.rowconfigure(4, weight=1)
+        self.f_box.rowconfigure(5, weight=1)
 
         self.f_box.columnconfigure(0, minsize=80)
         self.f_box.columnconfigure(1, minsize=200)
@@ -111,6 +111,8 @@ class SquashInterface:
 
         self.l_serial = ttk.Label(self.f_box, text='serial #:', anchor='e', width=8)
         self.e_serial = ttk.Entry(self.f_box, width=12)
+        self.l_qrcode = ttk.Label(self.f_box, text='board ID:', anchor='e', width=8)
+        self.e_qrcode = ttk.Entry(self.f_box, width=12)
 
         self.l_location = ttk.Label(self.f_box, text='location:', anchor='e', width=8)
         self.e_location = ttk.Combobox(self.f_box, state=['readonly'], width=12)
@@ -182,9 +184,14 @@ class SquashInterface:
         self.b_action.grid_forget()
 
     def clear_record_group(self):
+        self.e_serial.configure(state='normal')
+
         self.l_serial.grid_forget()
         self.e_serial.delete(0, tk.END)
         self.e_serial.grid_forget()
+        self.l_qrcode.grid_forget()
+        self.e_qrcode.delete(0, tk.END)
+        self.e_qrcode.grid_forget()
         self.l_location.grid_forget()
         self.e_location.delete(0, tk.END)
         self.e_location.grid_forget()
@@ -260,14 +267,16 @@ class SquashInterface:
         if state is SIStates.INSERT:
             self.l_serial.grid(column=0, row=0, pady=2, sticky='e')
             self.e_serial.grid(column=1, row=0, pady=2, sticky='we')
-            self.l_location.grid(column=0, row=1, pady=2, sticky='e')
-            self.e_location.grid(column=1, row=1, pady=2, sticky='we')
-            self.l_comment.grid(column=0, row=2, pady=2, sticky='e')
-            self.e_comment.grid(column=1, row=2, pady=2, sticky='we')
+            self.l_qrcode.grid(column=0, row=1, pady=2, sticky='e')
+            self.e_qrcode.grid(column=1, row=1, pady=2, sticky='we')
+            self.l_location.grid(column=0, row=2, pady=2, sticky='e')
+            self.e_location.grid(column=1, row=2, pady=2, sticky='we')
+            self.l_comment.grid(column=0, row=3, pady=2, sticky='e')
+            self.e_comment.grid(column=1, row=3, pady=2, sticky='we')
 
             self.b_record['text'] = 'register'
             self.b_record['command'] = self.on_click_register
-            self.b_record.grid(column=0, row=3, columnspan=2, rowspan=1, pady=4)
+            self.b_record.grid(column=0, row=4, columnspan=2, rowspan=1, pady=4)
 
             self.e_serial.focus_set()
 
@@ -293,7 +302,7 @@ class SquashInterface:
 
             self.t_info.grid(
                 column=0,
-                row=4,
+                row=5,
                 columnspan=3,
                 rowspan=1,
                 padx=4,
@@ -409,11 +418,12 @@ class SquashInterface:
         self.insert_database_entry([serial, location, comment])
 
     def on_click_edit(self):
+        qrcode = self.e_qrcode.get().strip()
         location = self.e_location.get().strip()
         comment = self.e_comment.get().strip()
         status = self.s_calib.get()[-1] + self.s_token.get()[-1]
 
-        self.modify_database_entry([location, comment, status])
+        self.modify_database_entry([qrcode, location, comment, status])
 
         query = self.query
 
@@ -425,23 +435,35 @@ class SquashInterface:
 
         entry = self.squash.label(self.results[self.index])
 
+        self.e_serial.configure(state='normal')
+        self.e_serial.delete(0, tk.END)
+        self.e_serial.insert(0, entry['serial'])
+        self.e_serial.configure(state='disabled')
+
+        self.e_qrcode.delete(0, tk.END)
+        self.e_qrcode.insert(0, entry['id'])
+
         location = entry['location'].split(', ')[-1].split('[')[0]
         self.e_location.set('  {}'.format(location.strip()))
 
         self.s_calib.set(' G/P: {}'.format(entry['status'][0]))
         self.s_token.set(' TP: {}'.format(entry['status'][1]))
 
-        self.l_location.grid(column=0, row=5, pady=2, sticky='e')
-        self.e_location.grid(column=1, row=5, pady=2, sticky='we')
-        self.l_comment.grid(column=0, row=6, pady=2, sticky='e')
-        self.e_comment.grid(column=1, row=6, pady=2, sticky='we')
-        self.l_status.grid(column=0, row=7, rowspan=2, sticky='e')
-        self.s_calib.grid(column=1, row=7, sticky='w')
-        self.s_token.grid(column=1, row=8, sticky='w')
+        self.l_serial.grid(column=0, row=6, pady=2, sticky='e')
+        self.e_serial.grid(column=1, row=6, pady=2, sticky='we')
+        self.l_qrcode.grid(column=0, row=7, pady=2, sticky='e')
+        self.e_qrcode.grid(column=1, row=7, pady=2, sticky='we')
+        self.l_location.grid(column=0, row=8, pady=2, sticky='e')
+        self.e_location.grid(column=1, row=8, pady=2, sticky='we')
+        self.l_comment.grid(column=0, row=9, pady=2, sticky='e')
+        self.e_comment.grid(column=1, row=9, pady=2, sticky='we')
+        self.l_status.grid(column=0, row=10, rowspan=2, sticky='e')
+        self.s_calib.grid(column=1, row=10, sticky='w')
+        self.s_token.grid(column=1, row=11, sticky='w')
 
         self.b_record['text'] = 'edit'
         self.b_record['command'] = self.on_click_edit
-        self.b_record.grid(column=0, row=9, columnspan=2, rowspan=1, pady=4)
+        self.b_record.grid(column=0, row=12, columnspan=2, rowspan=1, pady=4)
 
     def set_progress(self, i):
         self.p_bar['value'] = i
@@ -478,6 +500,7 @@ class SquashInterface:
 
         entry = {
             'serial': serial,
+            'id': '',
             'pedes': np.array_repr(pedes),
             'gains': np.array_repr(gains),
             'location': '{} [{}]'.format(location, timestamp),
@@ -602,6 +625,7 @@ class SquashInterface:
 
             self.t_info.insert('', tk.END, e_id, text=entry['serial'])
 
+            self._insert(e_id, 'board ID', 'info', entry['id'])
             self._insert(e_id, 'location', 'info', locat[::-1])
             self._insert(e_id, 'history', 'info', histo[::-1])
             self._insert(e_id, 'comment', 'info', entry['comment'])
@@ -613,7 +637,7 @@ class SquashInterface:
 
     @Decorators.show_progress
     def modify_database_entry(self, data):
-        location, comment, status = data
+        qrcode, location, comment, status = data
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
@@ -630,6 +654,8 @@ class SquashInterface:
 
         if entry['location'].split(', ')[-1].startswith(location):
             location = ''
+
+        entry['id'] = qrcode
 
         entry['location'] = _update_string(
             entry['location'], '{} [{}]', [location, timestamp], ', '
