@@ -187,6 +187,9 @@ class SquashInterface:
         self.e_pulse = ttk.Entry(self.f_channel, width=9)
 
     def init_display(self):
+        self.master.geometry('800x600')
+        self.master.title('pumpkin.py []')
+
         self.main.grid(column=0, row=0, sticky='nswe')
         self.frame.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
 
@@ -431,29 +434,42 @@ class SquashInterface:
 
             return wrapper
 
+        @classmethod
+        def reset_warnings(cls, f):
+            def wrapper(self, *args, **kwargs):
+                self.reset_notification()
+                f(self, *args, **kwargs)
+
+            return wrapper
+
+    @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_open(self):
         self.layout_display(SIModes.OPEN, None)
 
+    @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_close(self):
         self.layout_display(SIModes.NONE, SIStates.NONE)
 
-        self.squash.close()
-        self.squash = None
+        self.close_database_file()
 
+    @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_insert(self):
         self.layout_display(None, SIStates.INSERT)
 
+    @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_select(self):
         self.layout_display(None, SIStates.SELECT)
 
+    @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_update(self):
         self.layout_display(None, SIStates.UPDATE)
 
+    @Decorators.reset_warnings
     def on_carriage_return(self, event=None):
         self.reset_notification()
 
@@ -481,8 +497,11 @@ class SquashInterface:
                 self.update_database_entry(text)
             except FileNotFoundError:
                 self.set_notify_warning()
+            except IndexError:
+                self.set_notify_error()
             return
 
+    @Decorators.reset_warnings
     def on_click_browse(self):
         path = filedialog.askopenfilename(initialdir=os.getcwd())
 
@@ -491,6 +510,7 @@ class SquashInterface:
 
         self.on_carriage_return()
 
+    @Decorators.reset_warnings
     def on_click_register(self):
         serial = self.e_serial.get().strip()
         location = self.e_location.get().strip()
@@ -499,6 +519,7 @@ class SquashInterface:
 
         self.insert_database_entry([serial, location, install, comment])
 
+    @Decorators.reset_warnings
     def on_click_edit(self):
         qrcode = self.e_qrcode.get().strip()
         location = self.e_location.get().strip()
@@ -681,7 +702,8 @@ class SquashInterface:
         self.e_install.grid(column=1, row=row, pady=2, sticky='we')
 
     def on_select_entry(self, event):
-        self.index = int(event.widget.selection()[0].split('_')[0])
+        if not (selection := event.widget.selection()):
+            return
 
         entry = self.squash.label(self.results[self.index])
 
@@ -700,7 +722,10 @@ class SquashInterface:
         self.b_save.grid(column=1, row=2, sticky='we')
 
     def on_edit_entry(self, event):
-        self.index = int(event.widget.selection()[0].split('_')[0])
+        if not (selection := event.widget.selection()):
+            return
+
+        self.index = int(selection[0].split('_')[0])
 
         entry = self.squash.label(self.results[self.index])
 
@@ -743,12 +768,19 @@ class SquashInterface:
         self.p_bar['value'] = i
         self.p_bar.update()
 
-    @Decorators.show_progress
     def open_database_file(self, text):
         if os.path.isfile(text) is False:
             raise FileNotFoundError
 
         self.squash = SquashHelper(text)
+
+        self.master.title('pumpkin.py [{}]'.format(os.path.basename(text)))
+
+    def close_database_file(self):
+        self.squash.close()
+        self.squash = None
+
+        self.master.title('pumpkin.py []')
 
     @Decorators.show_progress
     def create_database_file(self, text):
