@@ -149,6 +149,7 @@ class SquashInterface:
         self.t_info.column('#0', width=96)
         self.t_info.heading('info', text='...')
         self.t_info.tag_configure('edit', foreground='red')
+        self.t_info.tag_configure('pass', background='#abe9b3')
         self.t_info.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
 
         self.f_draw = ttk.Labelframe(self.frame)
@@ -932,6 +933,8 @@ class SquashInterface:
             status = 'G/P: {} | TP: {}'.format(*entry['status'])
             files = [x if x else '-' for x in entry['files'].split(', ')]
 
+            s_tag = 'pass' if entry['status'] == 'PP' else 'info'
+
             self.t_info.insert('', tk.END, e_id, text=entry['serial'])
 
             self._insert(e_id, 'board ID', 'info', entry['id'])
@@ -940,7 +943,7 @@ class SquashInterface:
                 self._insert(e_id, 'install', 'info', entry['install'])
             self._insert(e_id, 'history', 'info', history[::-1])
             self._insert(e_id, 'comment', 'info', entry['comment'])
-            self._insert(e_id, 'status', 'info', status)
+            self._insert(e_id, 'status', s_tag, status)
             self._insert(e_id, 'files', 'info', ['<expand>'] + files)
             self._insert(e_id, 'edit', 'edit', '', label='<edit>')
 
