@@ -144,11 +144,47 @@ class SquashInterface:
         self.b_token['command'] = self.on_click_token
 
         self.t_info = ttk.Treeview(self.f_box, selectmode='browse')
+        self.t_info.bind('<<TreeviewSelect>>', self.on_select_entry)
         self.t_info['columns'] = ['info']
         self.t_info.column('#0', width=96)
         self.t_info.heading('info', text='...')
         self.t_info.tag_configure('edit', foreground='red')
         self.t_info.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
+
+        self.f_draw = ttk.Labelframe(self.frame)
+
+        self.f_draw.columnconfigure(2, weight=1)
+        self.f_draw.rowconfigure(0, weight=1)
+        self.f_draw.rowconfigure(3, weight=1)
+
+        self.n_draw = ttk.Notebook(self.f_draw)
+
+        self.f_summary = ttk.Frame(self.n_draw)
+        self.f_channel = ttk.Frame(self.n_draw)
+
+        self.f_summary.columnconfigure(0, minsize=80)
+        self.f_summary.columnconfigure(1, minsize=120)
+        self.f_channel.columnconfigure(0, minsize=80)
+        self.f_channel.columnconfigure(1, minsize=120)
+
+        self.n_draw.add(self.f_summary, text='summary')
+        self.n_draw.add(self.f_channel, text=' pulse ')
+
+        self.b_draw = ttk.Button(self.f_draw, text='draw', width=6)
+        self.b_draw['command'] = self.on_click_draw
+        self.b_save = ttk.Button(self.f_draw, text='save', width=6)
+        self.b_save['command'] = self.on_click_save
+        self.b_save['state'] = 'disabled'
+
+        self.b_back = ttk.Button(self.f_box, text='back', width=6)
+        self.b_back['command'] = self.on_click_back
+
+        self.l_summary = ttk.Label(self.f_summary, text='channel', anchor='e')
+        self.e_summary = ttk.Entry(self.f_summary, width=9)
+        self.l_channel = ttk.Label(self.f_channel, text='channel', anchor='e')
+        self.e_channel = ttk.Entry(self.f_channel, width=9)
+        self.l_pulse = ttk.Label(self.f_channel, text='pulse', anchor='e')
+        self.e_pulse = ttk.Entry(self.f_channel, width=9)
 
     def init_display(self):
         self.main.grid(column=0, row=0, sticky='nswe')
@@ -175,6 +211,11 @@ class SquashInterface:
 
         self.layout_display(self.mode, self.state)
 
+    def display_figure(self):
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.f_box)
+        self.canvas.get_tk_widget().pack(padx=4, pady=4, expand=True)
+        self.canvas.draw()
+
     def clear_figure(self):
         if self.fig is None:
             return
@@ -182,6 +223,9 @@ class SquashInterface:
         plt.close(self.fig)
 
         self.canvas.get_tk_widget().pack_forget()
+        self.b_back.pack_forget()
+
+        self.b_save['state'] = 'disabled'
 
         self.fig = None
         self.canvas = None
@@ -218,8 +262,27 @@ class SquashInterface:
 
         self.b_record.grid_forget()
 
+    def clear_draw_group(self):
+        self.f_draw.grid_forget()
+        self.n_draw.grid_forget()
+        self.l_summary.grid_forget()
+        self.e_summary.delete(0, tk.END)
+        self.e_summary.grid_forget()
+        self.l_channel.grid_forget()
+        self.e_channel.delete(0, tk.END)
+        self.e_channel.grid_forget()
+        self.l_pulse.grid_forget()
+        self.e_pulse.delete(0, tk.END)
+        self.e_pulse.grid_forget()
+
+        self.b_draw.grid_forget()
+        self.b_save.grid_forget()
+        self.b_back.grid_forget()
+
     def clear_display(self, mode, state):
         self.reset_notification()
+
+        self.clear_figure()
 
         if mode is SIModes.NONE:
             self.clear_action_group()
@@ -234,9 +297,6 @@ class SquashInterface:
         if state is SIStates.INSERT:
             self.clear_action_group()
 
-        if state is not SIStates.UPDATE:
-            self.clear_figure()
-
         if self.state is SIStates.INSERT:
             self.clear_record_group()
 
@@ -250,6 +310,7 @@ class SquashInterface:
             self.t_info.grid_forget()
 
             self.clear_record_group()
+            self.clear_draw_group()
 
             self.results = None
             self.query = None
@@ -349,6 +410,9 @@ class SquashInterface:
     def set_notify_warning(self):
         self.anchor['text'] = '⚠'
 
+    def set_notify_error(self):
+        self.anchor['text'] = '✘'
+
     class Decorators:
         @classmethod
         def reset_progress(cls, f):
@@ -405,6 +469,8 @@ class SquashInterface:
             return
 
         if self.state is SIStates.SELECT:
+            self.clear_figure()
+
             self.select_database_entry(text)
             return
 
@@ -456,6 +522,155 @@ class SquashInterface:
         self.e_token.delete(0, tk.END)
         self.e_token.insert(0, path)
 
+    @Decorators.reset_warnings
+    @Decorators.show_progress
+    def on_click_draw(self):
+        self.clear_figure()
+
+        entry = self.squash.label(self.results[self.index])
+
+        index = self.n_draw.index(self.n_draw.select())
+
+        if index == 0:
+            sel = slice_from_string(self.e_summary.get().strip())
+
+            if sel is None:
+                self.set_notify_error()
+                return
+
+            files = entry['files'].split(', ')
+
+            g_min = sel.start // 16
+            g_max = (sel.stop - 1) // 16 + 1
+
+            if not all(files[g_min:g_max]):
+                self.set_notify_error()
+                return
+
+            padding = g_min * 16
+
+            _y = np.zeros((padding, 40))
+            _p = np.zeros((padding, 2))
+
+            for f in files[g_min:g_max]:
+                _, _, _, y, pars, _ = self.squash.parse(
+                    f, callback=self.set_progress
+                )
+
+                _y = np.vstack((_y, y))
+                _p = np.vstack((_p, pars))
+
+            _y = _y[sel,:]
+            _p = _p[sel,:]
+
+            pulse_max_vs_step_disp_opts = {
+                'yrange': (0, 18000, 4000),
+                'interval': 4,
+                'labels': ('pulse #', 'pulse maximum'),
+                'canvas': (3.6, 3.0),
+                'margins': (1.5, 0.2, 0.2, 1.0),
+                'fmt_str': [
+                    'board {}',
+                    'channel {}',
+                    '[{:.0f}, {:.0f}]',
+                ],
+                'fmt_data': [
+                    [(entry['serial'],)] * _y.shape[0],
+                    list(zip(range(sel.start, sel.stop, sel.step))),
+                    _p.tolist(),
+                ],
+                'output': None,
+            }
+
+            self.fig = draw_graph(_y, None, **pulse_max_vs_step_disp_opts)
+        elif index == 1:
+            csel = slice_from_string(self.e_channel.get().strip())
+            psel = slice_from_string(self.e_pulse.get().strip())
+
+            if csel is None or psel is None:
+                self.set_notify_error()
+                return
+
+            files = entry['files'].split(', ')
+
+            g_min = csel.start // 16
+            g_max = (csel.stop - 1) // 16 + 1
+
+            if not all(files[g_min:g_max]):
+                self.set_notify_error()
+                return
+
+            padding = g_min * 16
+
+            _m = np.zeros((40, padding, 28))
+            _s = np.zeros((40, padding, 28))
+
+            for f in files[g_min:g_max]:
+                _, mean, sigma, _, _, _ = self.squash.object.parser(
+                    f, callback=self.set_progress
+                )
+
+                _m = np.concatenate((_m, mean), axis=1)
+                _s = np.concatenate((_s, sigma), axis=1)
+
+            _m = _m[psel,csel,:]
+            _s = _s[psel,csel,:]
+
+            pidx = np.repeat(np.mgrid[[psel]], _m.shape[1], axis=1).flatten()
+            cidx = np.repeat(np.mgrid[[csel]], _m.shape[0], axis=0).flatten()
+
+            _m = _m.reshape(-1, _m.shape[-1])
+            _s = _s.reshape(-1, _s.shape[-1])
+
+            pulse_vs_sample_disp_opts = {
+                'yrange': (0, 18000, 4000),
+                'interval': 4,
+                'labels': ('sample #', 'ADC value'),
+                'info': [0.92, 0.84, 0.09, 'right'],
+                'canvas': (3.6, 3.0),
+                'margins': (1.5, 0.2, 0.2, 1.0),
+                'fmt_str': [
+                    'serial {}',
+                    'channel {}',
+                    'pulse {}',
+                ],
+                'fmt_data': [
+                    [(entry['serial'],)] * _m.shape[0],
+                    list(zip(cidx)),
+                    list(zip(pidx)),
+                ],
+                'output': None,
+            }
+
+            self.fig = draw_graph(_m, _s, **pulse_vs_sample_disp_opts)
+
+        self.clear_record_group()
+        self.t_info.grid_remove()
+
+        self.display_figure()
+
+        self.b_back.pack(pady=4, side='bottom')
+        self.b_save['state'] = 'normal'
+
+    @Decorators.reset_warnings
+    @Decorators.show_progress
+    def on_click_save(self):
+        if self.fig is None:
+            return
+
+        path = filedialog.asksaveasfilename(
+            initialdir=os.getcwd(),
+            defaultextension='png',
+        )
+        self.fig.savefig(path)
+
+    @Decorators.reset_warnings
+    @Decorators.reset_progress
+    def on_click_back(self):
+        self.clear_figure()
+
+        self.t_info.grid()
+
     def on_select_location(self, event):
         if event.widget.get().strip() != 'BNL (sPHENIX)':
             self.e_install.delete(0, tk.END)
@@ -464,6 +679,25 @@ class SquashInterface:
 
         row = 3 if self.state is SIStates.INSERT else 10
         self.e_install.grid(column=1, row=row, pady=2, sticky='we')
+
+    def on_select_entry(self, event):
+        self.index = int(event.widget.selection()[0].split('_')[0])
+
+        entry = self.squash.label(self.results[self.index])
+
+        self.f_draw['text'] = entry['serial']
+
+        self.f_draw.grid(column=1, row=7, columnspan=6, rowspan=1, sticky='nswe')
+        self.n_draw.grid(column=0, row=0, columnspan=1, rowspan=4, sticky='nswe')
+        self.l_summary.grid(column=0, row=0, sticky='we')
+        self.e_summary.grid(column=1, row=0, sticky='we')
+        self.l_channel.grid(column=0, row=0, sticky='we')
+        self.e_channel.grid(column=1, row=0, sticky='we')
+        self.l_pulse.grid(column=0, row=1, sticky='we')
+        self.e_pulse.grid(column=1, row=1, sticky='we')
+
+        self.b_draw.grid(column=1, row=1, sticky='we')
+        self.b_save.grid(column=1, row=2, sticky='we')
 
     def on_edit_entry(self, event):
         self.index = int(event.widget.selection()[0].split('_')[0])
@@ -614,9 +848,7 @@ class SquashInterface:
 
         self.fig = draw_graph(y, None, **pulse_max_vs_step_disp_opts)
 
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.f_box)
-        self.canvas.get_tk_widget().pack(expand=True)
-        self.canvas.draw()
+        self.display_figure()
 
     def _one(self, node, key, tags, values, label=None):
         text = key if label is None else label

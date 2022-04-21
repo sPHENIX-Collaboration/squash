@@ -28,22 +28,20 @@ def split_dword(dword):
     return dword & 0xFFFF, dword >> 16
 
 
-def index_slice_from_string(text):
-    return slice(int(text), int(text) + 1)
-
-
 def slice_from_string(text):
-    if text and ':' not in text:
-        return index_slice_from_string(text)
+    if not text:
+        return None
 
-    string_to_field = {
-        True: int,
-        False: lambda x: None,
-    }
+    fields = [int(x) for x in text.split(':')]
 
-    args = list(zip(*zip_longest(text.split(':'), range(3))))[0]
+    if len(fields) == 1:
+        return slice(fields[0], fields[0] + 1, 1)
 
-    return slice(*[string_to_field[bool(x)](x) for x in args])
+    if len(fields) == 2:
+        return slice(fields[0], fields[1], 1)
+
+    if len(fields) == 3:
+        return slice(fields[0], fields[1], fields[2])
 
 
 def linear(x, a, b):
