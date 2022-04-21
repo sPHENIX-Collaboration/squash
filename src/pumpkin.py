@@ -706,6 +706,8 @@ class SquashInterface:
         if not (selection := event.widget.selection()):
             return
 
+        self.index = int(selection[0].split('_')[0])
+
         entry = self.squash.label(self.results[self.index])
 
         self.f_draw['text'] = entry['serial']
