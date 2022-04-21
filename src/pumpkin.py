@@ -412,10 +412,10 @@ class SquashInterface:
         self.anchor['text'] = ''
 
     def set_notify_warning(self):
-        self.anchor['text'] = '⚠'
+        self.anchor['text'] = '⚠️'
 
     def set_notify_error(self):
-        self.anchor['text'] = '✘'
+        self.anchor['text'] = '🛑'
 
     class Decorators:
         @classmethod
