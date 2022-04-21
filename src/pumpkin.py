@@ -80,8 +80,8 @@ class SquashInterface:
         self.h_bar = ttk.Separator(self.frame, orient='horizontal')
         self.f_box = ttk.Frame(self.frame, relief='groove')
 
-        self.f_box.columnconfigure(2, weight=1)
-        self.f_box.rowconfigure(5, weight=1)
+        self.f_box.columnconfigure(3, weight=1)
+        self.f_box.rowconfigure(6, weight=1)
 
         self.f_box.columnconfigure(0, minsize=80)
         self.f_box.columnconfigure(1, minsize=200)
@@ -123,6 +123,9 @@ class SquashInterface:
             '  BNL (sPHENIX)',
         )
         self.e_location.set('  UC Boulder')
+        self.e_location.bind('<<ComboboxSelected>>', self.on_select_location)
+
+        self.e_install = ttk.Entry(self.f_box, width=12)
 
         self.l_comment = ttk.Label(self.f_box, text='comment:', anchor='e', width=8)
         self.e_comment = ttk.Entry(self.f_box, width=12)
@@ -134,6 +137,11 @@ class SquashInterface:
         self.s_token['values'] = (' TP: ?', ' TP: P', ' TP: F')
 
         self.b_record = ttk.Button(self.f_box, text='record', width=8)
+
+        self.l_token = ttk.Label(self.f_box, text='tp data', anchor='e', width=8)
+        self.e_token = ttk.Entry(self.f_box, width=12)
+        self.b_token = ttk.Button(self.f_box, text='browse', width=5)
+        self.b_token['command'] = self.on_click_token
 
         self.t_info = ttk.Treeview(self.f_box, selectmode='browse')
         self.t_info['columns'] = ['info']
@@ -195,12 +203,19 @@ class SquashInterface:
         self.l_location.grid_forget()
         self.e_location.delete(0, tk.END)
         self.e_location.grid_forget()
+        self.e_install.delete(0, tk.END)
+        self.e_install.grid_forget()
         self.l_comment.grid_forget()
         self.e_comment.delete(0, tk.END)
         self.e_comment.grid_forget()
+        self.l_token.grid_forget()
+        self.e_token.delete(0, tk.END)
+        self.e_token.grid_forget()
+        self.b_token.grid_forget()
         self.l_status.grid_forget()
         self.s_calib.grid_forget()
         self.s_token.grid_forget()
+
         self.b_record.grid_forget()
 
     def clear_display(self, mode, state):
@@ -271,12 +286,12 @@ class SquashInterface:
             self.e_qrcode.grid(column=1, row=1, pady=2, sticky='we')
             self.l_location.grid(column=0, row=2, pady=2, sticky='e')
             self.e_location.grid(column=1, row=2, pady=2, sticky='we')
-            self.l_comment.grid(column=0, row=3, pady=2, sticky='e')
-            self.e_comment.grid(column=1, row=3, pady=2, sticky='we')
+            self.l_comment.grid(column=0, row=4, pady=2, sticky='e')
+            self.e_comment.grid(column=1, row=4, pady=2, sticky='we')
 
             self.b_record['text'] = 'register'
             self.b_record['command'] = self.on_click_register
-            self.b_record.grid(column=0, row=4, columnspan=2, rowspan=1, pady=4)
+            self.b_record.grid(column=0, row=5, columnspan=2, rowspan=1, pady=4)
 
             self.e_serial.focus_set()
 
@@ -302,8 +317,8 @@ class SquashInterface:
 
             self.t_info.grid(
                 column=0,
-                row=5,
-                columnspan=3,
+                row=6,
+                columnspan=4,
                 rowspan=1,
                 padx=4,
                 pady=4,
@@ -413,22 +428,42 @@ class SquashInterface:
     def on_click_register(self):
         serial = self.e_serial.get().strip()
         location = self.e_location.get().strip()
+        install = self.e_install.get().strip()
         comment = self.e_comment.get().strip()
 
-        self.insert_database_entry([serial, location, comment])
+        self.insert_database_entry([serial, location, install, comment])
 
     def on_click_edit(self):
         qrcode = self.e_qrcode.get().strip()
         location = self.e_location.get().strip()
+        install = self.e_install.get().strip()
         comment = self.e_comment.get().strip()
+        token = self.e_token.get().strip()
         status = self.s_calib.get()[-1] + self.s_token.get()[-1]
 
-        self.modify_database_entry([qrcode, location, comment, status])
+        self.modify_database_entry([
+            qrcode, location, install, comment, token, status
+        ])
 
         query = self.query
 
         self.layout_display(self.mode, self.state)
         self.select_database_entry(query)
+
+    def on_click_token(self):
+        path = filedialog.askopenfilename(initialdir=os.getcwd())
+
+        self.e_token.delete(0, tk.END)
+        self.e_token.insert(0, path)
+
+    def on_select_location(self, event):
+        if event.widget.get().strip() != 'BNL (sPHENIX)':
+            self.e_install.delete(0, tk.END)
+            self.e_install.grid_forget()
+            return
+
+        row = 3 if self.state is SIStates.INSERT else 10
+        self.e_install.grid(column=1, row=row, pady=2, sticky='we')
 
     def on_edit_entry(self, event):
         self.index = int(event.widget.selection()[0].split('_')[0])
@@ -446,24 +481,29 @@ class SquashInterface:
         location = entry['location'].split(', ')[-1].split('[')[0]
         self.e_location.set('  {}'.format(location.strip()))
 
+        self.e_token.insert(0, entry['files'].split(', ')[-1])
+
         self.s_calib.set(' G/P: {}'.format(entry['status'][0]))
         self.s_token.set(' TP: {}'.format(entry['status'][1]))
 
-        self.l_serial.grid(column=0, row=6, pady=2, sticky='e')
-        self.e_serial.grid(column=1, row=6, pady=2, sticky='we')
-        self.l_qrcode.grid(column=0, row=7, pady=2, sticky='e')
-        self.e_qrcode.grid(column=1, row=7, pady=2, sticky='we')
-        self.l_location.grid(column=0, row=8, pady=2, sticky='e')
-        self.e_location.grid(column=1, row=8, pady=2, sticky='we')
-        self.l_comment.grid(column=0, row=9, pady=2, sticky='e')
-        self.e_comment.grid(column=1, row=9, pady=2, sticky='we')
-        self.l_status.grid(column=0, row=10, rowspan=2, sticky='e')
-        self.s_calib.grid(column=1, row=10, sticky='w')
-        self.s_token.grid(column=1, row=11, sticky='w')
+        self.l_serial.grid(column=0, row=7, pady=2, sticky='e')
+        self.e_serial.grid(column=1, row=7, pady=2, sticky='we')
+        self.l_qrcode.grid(column=0, row=8, pady=2, sticky='e')
+        self.e_qrcode.grid(column=1, row=8, pady=2, sticky='we')
+        self.l_location.grid(column=0, row=9, pady=2, sticky='e')
+        self.e_location.grid(column=1, row=9, pady=2, sticky='we')
+        self.l_comment.grid(column=0, row=11, pady=2, sticky='e')
+        self.e_comment.grid(column=1, row=11, pady=2, sticky='we')
+        self.l_token.grid(column=0, row=12, pady=2, sticky='e')
+        self.e_token.grid(column=1, row=12, pady=2, sticky='we')
+        self.b_token.grid(column=2, row=12, padx=4, pady=2, sticky='we')
+        self.l_status.grid(column=0, row=13, rowspan=2, sticky='e')
+        self.s_calib.grid(column=1, row=13, sticky='w')
+        self.s_token.grid(column=1, row=14, sticky='w')
 
         self.b_record['text'] = 'edit'
         self.b_record['command'] = self.on_click_edit
-        self.b_record.grid(column=0, row=12, columnspan=2, rowspan=1, pady=4)
+        self.b_record.grid(column=0, row=15, columnspan=2, rowspan=1, pady=4)
 
     def set_progress(self, i):
         self.p_bar['value'] = i
@@ -486,7 +526,7 @@ class SquashInterface:
 
     @Decorators.show_progress
     def insert_database_entry(self, data):
-        serial, location, comment = data
+        serial, location, install, comment = data
 
         query = 'WHERE serial = {}'.format(repr(serial))
         if len(self.squash.select(query)) > 0:
@@ -494,7 +534,7 @@ class SquashInterface:
 
         pedes = np.zeros((64, 2))
         gains = np.zeros((64, 2))
-        files = [''] * 4
+        files = [''] * 5
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
@@ -508,6 +548,7 @@ class SquashInterface:
             'comment': comment,
             'status': '??',
             'files': ', '.join(files),
+            'install': install,
         }
 
         self.squash.insert(entry.keys(), entry.values())
@@ -547,6 +588,7 @@ class SquashInterface:
         entry['history'] = ', '.join([data['history'], entry['history']])
         entry['comment'] = data['comment']
         entry['status'] = data['status']
+        entry['install'] = data['install']
 
         self.squash.update(*zip(*entry.items()), condition)
 
@@ -618,18 +660,20 @@ class SquashInterface:
 
             entry = self.squash.label(data)
 
-            locat = entry['location'].split(', ')
-            histo = entry['history'].split(', ')
-            statu = 'G/P: {} | TP: {}'.format(*entry['status'])
+            location = entry['location'].split(', ')
+            history = entry['history'].split(', ')
+            status = 'G/P: {} | TP: {}'.format(*entry['status'])
             files = [x if x else '-' for x in entry['files'].split(', ')]
 
             self.t_info.insert('', tk.END, e_id, text=entry['serial'])
 
             self._insert(e_id, 'board ID', 'info', entry['id'])
-            self._insert(e_id, 'location', 'info', locat[::-1])
-            self._insert(e_id, 'history', 'info', histo[::-1])
+            self._insert(e_id, 'location', 'info', location[::-1])
+            if location == 'BNL (sPHENIX)':
+                self._insert(e_id, 'install', 'info', entry['install'])
+            self._insert(e_id, 'history', 'info', history[::-1])
             self._insert(e_id, 'comment', 'info', entry['comment'])
-            self._insert(e_id, 'status', 'info', statu)
+            self._insert(e_id, 'status', 'info', status)
             self._insert(e_id, 'files', 'info', ['<expand>'] + files)
             self._insert(e_id, 'edit', 'edit', '', label='<edit>')
 
@@ -637,7 +681,7 @@ class SquashInterface:
 
     @Decorators.show_progress
     def modify_database_entry(self, data):
-        qrcode, location, comment, status = data
+        qrcode, location, install, comment, token, status = data
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
@@ -667,7 +711,13 @@ class SquashInterface:
             entry['history'], 'EDIT [{}]', [timestamp], ', '
         )
 
+        if token:
+            files = entry['files'].split(', ')
+            files[-1] = token
+            entry['files'] = ', '.join(files)
+
         entry['status'] = status
+        entry['install'] = install
 
         condition = 'WHERE serial = {}'.format(repr(entry['serial']))
 
