@@ -189,6 +189,7 @@ class SquashInterface:
     def init_display(self):
         self.master.geometry('800x600')
         self.master.title('pumpkin.py []')
+        self.master.iconphoto(False, tk.PhotoImage(file='icon.png'))
 
         self.main.grid(column=0, row=0, sticky='nswe')
         self.frame.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
