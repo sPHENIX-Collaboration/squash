@@ -555,8 +555,8 @@ class SquashInterface:
             'yrange': (0, 18000, 4000),
             'interval': 4,
             'labels': ('pulse #', 'pulse maximum'),
-            'canvas': (2.0, 1.5),
-            'margins': (0.5, 0.15, 0.15, 0.25),
+            'canvas': (3.6, 3.0),
+            'margins': (1.5, 0.2, 0.2, 1.0),
             'fmt_str': [
                 'serial {}',
                 'channel {}',

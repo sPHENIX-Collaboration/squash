@@ -60,9 +60,9 @@ def draw_graph(
 
     for (i, j), ax in np.ndenumerate(axs):
         if i == rows - 1:
-            ax.set_xlabel(labels[0], fontsize=9)
+            ax.set_xlabel(labels[0], fontsize=6)
         if j == 0:
-            ax.set_ylabel(labels[1], fontsize=9)
+            ax.set_ylabel(labels[1], fontsize=6)
 
     for (i,), ax in np.ndenumerate(axs.ravel()):
         ax.set_ylim(top=yrange[1], bottom=yrange[0])
@@ -70,7 +70,7 @@ def draw_graph(
         ax.xaxis.set_ticks(range(x[0], x[-1], interval))
         ax.yaxis.set_ticks(range(*yrange))
 
-        ax.tick_params(axis='both', which='major', labelsize=8)
+        ax.tick_params(axis='both', which='major', labelsize=5)
 
         try:
             ax.errorbar(x, y[i], yerr=yerr[i], fmt='bo', markersize=1.0)
@@ -83,7 +83,7 @@ def draw_graph(
                         f_str.format(*f_data[i]),
                         xy=(xinfo, yinfo),
                         xycoords='axes fraction',
-                        fontsize=8,
+                        fontsize=5,
                         ha=xalign,
                     )
 
