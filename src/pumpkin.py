@@ -845,6 +845,12 @@ class SquashInterface:
 
         query = 'WHERE serial = {}'.format(repr(serial))
         if len(self.squash.select(query)) > 0:
+            self.set_notify_warning()
+            return
+
+        query = 'WHERE id = {}'.format(repr(qrcode))
+        if qrcode != '' and len(self.squash.select(query)) > 0:
+            self.set_notify_warning()
             return
 
         pedes = np.zeros((64, 2))
