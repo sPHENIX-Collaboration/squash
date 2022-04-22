@@ -20,7 +20,7 @@ from utils import slice_from_string
 class SIModes(Enum):
     NONE = 0
     OPEN = 1
-    CREATE = 2
+    LOGIN = 2
     ACTIVE = 3
 
 
@@ -39,6 +39,7 @@ class SquashInterface:
         self.mode = SIModes.NONE
         self.state = SIStates.NONE
 
+        self.user = None
         self.results = None
         self.query = None
         self.index = None
@@ -109,6 +110,12 @@ class SquashInterface:
         self.b_update['command'] = self.on_click_update
         self.b_select = ttk.Button(self.frame, text='select', width=6)
         self.b_select['command'] = self.on_click_select
+
+        self.l_user = ttk.Label(self.f_box, text='user:', anchor='center', width=8)
+        self.e_user = ttk.Entry(self.f_box, width=12)
+        self.e_user.bind('<Key-Return>', self.on_click_continue)
+        self.b_cont = ttk.Button(self.f_box, text='continue', width=6)
+        self.b_cont['command'] = self.on_click_continue
 
         self.l_serial = ttk.Label(self.f_box, text='serial #:', anchor='e', width=8)
         self.e_serial = ttk.Entry(self.f_box, width=12)
@@ -297,8 +304,15 @@ class SquashInterface:
             self.b_update.grid_forget()
             self.b_select.grid_forget()
 
-        if mode is SIModes.ACTIVE:
+        if mode is SIModes.LOGIN:
             self.clear_action_group()
+
+        if mode is SIModes.ACTIVE:
+            self.l_user.grid_forget()
+            self.e_user.delete(0, tk.END)
+            self.e_user.grid_forget()
+
+            self.b_cont.grid_forget()
 
         if state is SIStates.INSERT:
             self.clear_action_group()
@@ -337,6 +351,14 @@ class SquashInterface:
             self.b_action.grid(column=6, row=0, padx=4)
 
             self.e_text.focus_set()
+
+        if mode is SIModes.LOGIN:
+            self.l_user.grid(column=0, row=0, pady=2, sticky='e')
+            self.e_user.grid(column=1, row=0, pady=2, sticky='we')
+
+            self.b_cont.grid(column=0, row=1, columnspan=2, rowspan=1, pady=4)
+
+            self.e_user.focus_set()
 
         if mode is SIModes.ACTIVE:
             self.b_power['text'] = 'close'
@@ -484,7 +506,7 @@ class SquashInterface:
             except FileNotFoundError:
                 self.set_notify_warning()
             else:
-                self.layout_display(SIModes.ACTIVE, SIStates.NONE)
+                self.layout_display(SIModes.LOGIN, None)
             return
 
         if self.state is SIStates.SELECT:
@@ -512,6 +534,18 @@ class SquashInterface:
         self.e_text.insert(0, path)
 
         self.on_carriage_return()
+
+    @Decorators.reset_warnings
+    def on_click_continue(self, event=None):
+        user = self.e_user.get().strip()
+
+        if not user:
+            self.set_notify_warning()
+            return
+
+        self.user = user
+
+        self.layout_display(SIModes.ACTIVE, SIStates.NONE)
 
     @Decorators.reset_warnings
     def on_click_register(self):
@@ -785,6 +819,8 @@ class SquashInterface:
         self.squash.close()
         self.squash = None
 
+        self.user = None
+
         self.master.title('pumpkin.py []')
 
     @Decorators.show_progress
@@ -809,13 +845,16 @@ class SquashInterface:
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
+        if comment:
+            comment = '{} [{}] <{}>'.format(comment, timestamp, self.user)
+
         entry = {
             'serial': serial,
             'id': '',
             'pedes': np.array_repr(pedes),
             'gains': np.array_repr(gains),
-            'location': '{} [{}]'.format(location, timestamp),
-            'history': 'INSERT: [{}]'.format(timestamp),
+            'location': '{} [{}] <{}>'.format(location, timestamp, self.user),
+            'history': 'INSERT: [{}] <{}>'.format(timestamp, self.user),
             'comment': comment,
             'status': '??',
             'files': ', '.join(files),
@@ -843,6 +882,8 @@ class SquashInterface:
         files = data['files'].split(', ')
         files[group] = entry['files'].split(', ')[group]
 
+        history = entry['history'] + ' <{}>'.format(self.user)
+
         i_min = group * 16
         i_max = i_min + 16
 
@@ -856,7 +897,7 @@ class SquashInterface:
         entry['gains'] = np.array_repr(gains)
 
         entry['location'] = data['location']
-        entry['history'] = ', '.join([data['history'], entry['history']])
+        entry['history'] = ', '.join([data['history'], history])
         entry['comment'] = data['comment']
         entry['status'] = data['status']
         entry['install'] = data['install']
@@ -973,13 +1014,22 @@ class SquashInterface:
         entry['id'] = qrcode
 
         entry['location'] = _update_string(
-            entry['location'], '{} [{}]', [location, timestamp], ', '
+            entry['location'],
+            '{} [{}] <{}>',
+            [location, timestamp, self.user],
+            ', '
         )
         entry['comment'] = _update_string(
-            entry['comment'], '{}', [comment], '; '
+            entry['comment'],
+            '{} [{}] <{}>',
+            [comment, timestamp, self.user],
+            '; '
         )
         entry['history'] = _update_string(
-            entry['history'], 'EDIT [{}]', [timestamp], ', '
+            entry['history'],
+            'EDIT [{}] <{}>',
+            [timestamp, self.user],
+            ', '
         )
 
         if token:
