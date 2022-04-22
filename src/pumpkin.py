@@ -4,6 +4,7 @@ from datetime import datetime
 from enum import Enum
 import os
 
+from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
@@ -190,7 +191,7 @@ class SquashInterface:
     def init_display(self):
         self.master.geometry('800x600')
         self.master.title('pumpkin.py []')
-        self.master.iconphoto(False, tk.PhotoImage(file='icon.png'))
+        self.master.iconphoto(False, ImageTk.PhotoImage(Image.open('icon.png')))
 
         self.main.grid(column=0, row=0, sticky='nswe')
         self.frame.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
