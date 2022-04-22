@@ -148,7 +148,7 @@ class SquashInterface:
 
         self.l_token = ttk.Label(self.f_box, text='tp data', anchor='e', width=8)
         self.e_token = ttk.Entry(self.f_box, width=12)
-        self.b_token = ttk.Button(self.f_box, text='browse', width=5)
+        self.b_token = ttk.Button(self.f_box, text='...', width=1)
         self.b_token['command'] = self.on_click_token
 
         self.t_info = ttk.Treeview(self.f_box, selectmode='browse')
@@ -158,6 +158,7 @@ class SquashInterface:
         self.t_info.heading('info', text='...')
         self.t_info.tag_configure('edit', foreground='red')
         self.t_info.tag_configure('pass', background='#abe9b3')
+        self.t_info.tag_configure('warn', background='#f8bd96')
         self.t_info.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
 
         self.f_draw = ttk.Labelframe(self.frame)
@@ -340,6 +341,9 @@ class SquashInterface:
         if mode is SIModes.NONE:
             self.b_power['text'] = 'open'
             self.b_power['command'] = self.on_click_open
+            self.b_power.bind('<Key-Return>', self.on_click_open)
+
+            self.b_power.focus_set()
 
         if mode is SIModes.OPEN:
             self.e_text.grid(
@@ -363,6 +367,7 @@ class SquashInterface:
         if mode is SIModes.ACTIVE:
             self.b_power['text'] = 'close'
             self.b_power['command'] = self.on_click_close
+            self.b_power.unbind('<Key-Return>')
 
             self.b_insert.grid(column=0, row=2)
             self.b_update.grid(column=0, row=3)
@@ -469,7 +474,7 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     @Decorators.reset_progress
-    def on_click_open(self):
+    def on_click_open(self, event=None):
         self.layout_display(SIModes.OPEN, None)
 
     @Decorators.reset_warnings
@@ -975,18 +980,23 @@ class SquashInterface:
             status = 'G/P: {} | TP: {}'.format(*entry['status'])
             files = [x if x else '-' for x in entry['files'].split(', ')]
 
-            s_tag = 'pass' if entry['status'] == 'PP' else 'info'
+            i_tag = 'info' if entry['id'] else 'warn'
+            s_tag = 'pass' if entry['status'] == 'PP' else 'warn'
+
+            f_bool = list(map(lambda x: int(x != '-'), files))
+            f_info = 'files | {}/4 | {}/1'.format(sum(f_bool[:4]), f_bool[-1])
+            f_tag = 'info' if sum(f_bool) == 5 else 'warn'
 
             self.t_info.insert('', tk.END, e_id, text=entry['serial'])
 
-            self._insert(e_id, 'board ID', 'info', entry['id'])
+            self._insert(e_id, 'board ID', i_tag, entry['id'])
             self._insert(e_id, 'location', 'info', location[::-1])
             if location == 'BNL (sPHENIX)':
                 self._insert(e_id, 'install', 'info', entry['install'])
             self._insert(e_id, 'history', 'info', history[::-1])
             self._insert(e_id, 'comment', 'info', entry['comment'])
             self._insert(e_id, 'status', s_tag, status)
-            self._insert(e_id, 'files', 'info', ['<expand>'] + files)
+            self._insert(e_id, f_info, [f_tag, 'info'], ['<expand>'] + files)
             self._insert(e_id, 'edit', 'edit', '', label='<edit>')
 
             self.set_progress(i * 100 / len(self.results))
