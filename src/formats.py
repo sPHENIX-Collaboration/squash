@@ -79,14 +79,20 @@ class DataFormat_v1(DataFormat):
         pedes = np.zeros((64, 2))
         gains = np.zeros((64, 2))
 
+        magic = '-' * 32
+
         with open(raw, 'r') as fp, open(os.devnull, 'w') as fn:
-            entry['serial'] = read_config_line(fp)
-            entry['offset'] = int(read_config_line(fp))
+            metadata = {}
 
-            read_and_discard_lines(fp, 4)
+            while (keyval := read_config_line(fp))[0] != magic:
+                metadata[keyval[0]] = keyval[1]
 
-            for key in ('nstep', 'nstep_event', 'nstep_data', 'nsample'):
-                entry[key] = int(read_config_line(fp))
+            entry['serial'] = metadata['BOARDID']
+            entry['offset'] = int(metadata['CHANNELMIN'])
+            entry['nstep'] = int(metadata['NUMBEROFSTEPS'])
+            entry['nstep_event'] = int(metadata['EVENTSPERSTEP'])
+            entry['nstep_data'] = int(metadata['DACPERSTEP'])
+            entry['nsample'] = int(metadata['NSAMPLES'])
 
             offset = entry['offset']
             nstep = entry['nstep']
