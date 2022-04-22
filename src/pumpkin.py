@@ -555,11 +555,14 @@ class SquashInterface:
     @Decorators.reset_warnings
     def on_click_register(self):
         serial = self.e_serial.get().strip()
+        qrcode = self.e_qrcode.get().strip()
         location = self.e_location.get().strip()
         install = self.e_install.get().strip()
         comment = self.e_comment.get().strip()
 
-        self.insert_database_entry([serial, location, install, comment])
+        self.insert_database_entry([
+            serial, qrcode, location, install, comment
+        ])
 
     @Decorators.reset_warnings
     def on_click_edit(self):
@@ -838,7 +841,7 @@ class SquashInterface:
 
     @Decorators.show_progress
     def insert_database_entry(self, data):
-        serial, location, install, comment = data
+        serial, qrcode, location, install, comment = data
 
         query = 'WHERE serial = {}'.format(repr(serial))
         if len(self.squash.select(query)) > 0:
@@ -855,7 +858,7 @@ class SquashInterface:
 
         entry = {
             'serial': serial,
-            'id': '',
+            'id': qrcode,
             'pedes': np.array_repr(pedes),
             'gains': np.array_repr(gains),
             'location': '{} [{}] <{}>'.format(location, timestamp, self.user),
