@@ -880,7 +880,7 @@ class SquashInterface:
         data = self.squash.label(self.squash.select(condition)[0])
 
         files = data['files'].split(', ')
-        files[group] = entry['files'].split(', ')[group]
+        files[group] = os.path.relpath(entry['files'].split(', ')[group])
 
         history = entry['history'] + ' <{}>'.format(self.user)
 
