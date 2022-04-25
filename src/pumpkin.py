@@ -1003,12 +1003,14 @@ class SquashInterface:
             'fmt_str': [
                 'serial {}',
                 'channel {}',
-                '[{:.0f}, {:.0f}]',
+                'pedestal: {:.0f}',
+                'gain: {:.0f}',
             ],
             'fmt_data': [
                 [(serial,)] * y.shape[0],
                 list(zip(range(i_min, i_max))),
-                pars.tolist(),
+                [(x[0],) for x in pars.tolist()],
+                [(x[1],) for x in pars.tolist()],
             ],
             'output': None,
         }
