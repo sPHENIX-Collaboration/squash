@@ -972,9 +972,20 @@ class SquashInterface:
 
         entry['location'] = data['location']
         entry['history'] = ', '.join([data['history'], history])
-        entry['comment'] = data['comment']
         entry['status'] = data['status']
         entry['install'] = data['install']
+
+        if entry['comment']:
+            comments = [x for x in data['comment'].split('; ') if x]
+            comments.extend(entry['comment'].split('; '))
+            comments.append(
+                '{} parser errors ({}:{}) <{}>'.format(
+                    len(entry['comment'].split('; ')), i_min, i_max - 1, self.user
+                )
+            )
+            entry['comment'] = '; '.join(comments)
+        else:
+            entry['comment'] = data['comment']
 
         self.squash.update(*zip(*entry.items()), condition)
 
@@ -1046,6 +1057,7 @@ class SquashInterface:
 
             location = entry['location'].split(', ')
             history = entry['history'].split(', ')
+            comment = entry['comment'].split('; ')
             status = 'G/P: {} | TP: {}'.format(*entry['status'])
             files = [x if x else '-' for x in entry['files'].split(', ')]
 
@@ -1063,7 +1075,7 @@ class SquashInterface:
             if location == 'BNL (sPHENIX)':
                 self._insert(e_id, 'install', 'info', entry['install'])
             self._insert(e_id, 'history', 'info', history[::-1])
-            self._insert(e_id, 'comment', 'info', entry['comment'])
+            self._insert(e_id, 'comment', 'info', comment[::-1])
             self._insert(e_id, 'status', s_tag, status)
             self._insert(e_id, f_info, [f_tag, 'info'], ['<expand>'] + files)
             self._insert(e_id, 'edit', 'edit', '', label='<edit>')

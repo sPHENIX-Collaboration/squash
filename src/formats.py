@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+from enum import IntEnum
 import os
 import sys
 
@@ -17,6 +18,23 @@ from utils import (
     linear,
     powerlaw_doubleexp,
 )
+
+
+class ParseError(IntEnum):
+    NONE = 0
+    SIGMA = 1
+    PSAT = 2
+    PZERO = 3
+    FIT = 4
+
+
+errm = {
+    ParseError.NONE: '???',
+    ParseError.SIGMA: 'sigma/mu > 10%',
+    ParseError.PSAT: 'pulse saturated',
+    ParseError.PZERO: 'ADC value at 0',
+    ParseError.FIT: 'fit error',
+}
 
 
 class DataFormatError(Exception):
@@ -165,18 +183,26 @@ class DataFormat_v1(DataFormat):
             sys_stdout = sys.stdout
             sys.stdout = fn
 
+            errc = np.zeros((16, nstep), dtype=np.int32)
+
             for i in range(nstep):
                 for j in range(0, 16):
                     if np.any(rels[i,j,:] > 0.1):
-                        display_fit_error('sigma/mu > 10%')
+                        err = ParseError.SIGMA
+                        display_fit_error(errm[err])
+                        errc[j,i] = int(err)
                         continue
 
                     if np.any(sigma == 0) and np.any(mean == 16384):
-                        display_fit_error('pulse saturated')
+                        err = ParseError.PSAT
+                        display_fit_error(errm[err])
+                        errc[j,i] = int(err)
                         continue
 
                     if np.any(sigma == 0) and np.any(mean == 0):
-                        display_fit_error('pulse at 0')
+                        err = ParseError.PZERO
+                        display_fit_error(errm[err])
+                        errc[j,i] = int(err)
                         continue
 
                     try:
@@ -185,11 +211,10 @@ class DataFormat_v1(DataFormat):
                         xmin = fmin(min_form, 5, args=tuple(popt))
 
                         y[j][i] = powerlaw_doubleexp(xmin, *popt)
-                    except ValueError:
-                        display_fit_error('fit error (ValueError)')
-                        pass
-                    except np.linalg.LinAlgError:
-                        display_fit_error('fit error (np.linalg.LinAlgError)')
+                    except (ValueError, np.linalg.LinAlgError):
+                        err = ParseError.FIT
+                        display_fit_error(errm[err])
+                        errc[j,i] = int(err)
                         pass
                     except RuntimeError:
                         pass
@@ -235,9 +260,17 @@ class DataFormat_v1(DataFormat):
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
+        errors = [
+            '[C {}/P {}] error: {}'.format(
+                i_min + idx[0], idx[1], errm[ParseError(e)]
+            )
+            for idx, e in np.ndenumerate(errc)
+            if ParseError(e) is not ParseError.NONE
+        ]
+
         entry['history'] = 'UPDATE: ({}:{}) [{}]'.format(
             i_min, i_max - 1, timestamp)
-        entry['comment'] = ''
+        entry['comment'] = '; '.join(errors)
         entry['status'] = '??'
         entry['install'] = ''
 
