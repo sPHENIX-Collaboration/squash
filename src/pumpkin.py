@@ -44,6 +44,7 @@ class SquashInterface:
         self.fontsizes = {}
 
         self.user = None
+        self.dir = None
         self.results = None
         self.query = None
         self.index = None
@@ -578,10 +579,13 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_browse(self):
-        path = filedialog.askopenfilename(initialdir=os.getcwd())
+        idir = os.getcwd() if self.dir is None else self.dir
+        path = filedialog.askopenfilename(initialdir=idir)
 
         self.e_text.delete(0, tk.END)
         self.e_text.insert(0, path)
+
+        self.dir = os.path.dirname(path)
 
         self.on_carriage_return()
 
@@ -882,6 +886,7 @@ class SquashInterface:
         self.squash = None
 
         self.user = None
+        self.dir = None
 
         self.master.title('pumpkin.py []')
 
