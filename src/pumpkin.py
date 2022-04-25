@@ -269,23 +269,22 @@ class SquashInterface:
         self.scale = scale
 
     def display_figure(self):
+        if self.canvas is not None:
+            self.clear_figure()
+
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.f_box)
         self.canvas.get_tk_widget().pack(padx=4, pady=4, expand=True)
         self.canvas.draw()
 
     def clear_figure(self):
-        if self.fig is None:
+        if self.canvas is None:
             return
 
-        plt.close(self.fig)
-
         self.canvas.get_tk_widget().pack_forget()
-        self.b_back.pack_forget()
-
-        self.b_save['state'] = 'disabled'
-
-        self.fig = None
         self.canvas = None
+
+        self.b_back.pack_forget()
+        self.b_save['state'] = 'disabled'
 
     def clear_action_group(self):
         self.e_text.delete(0, tk.END)
@@ -570,7 +569,8 @@ class SquashInterface:
             self.clear_figure()
 
             try:
-                self.update_database_entry(text)
+                for t in text.split(', '):
+                    self.update_database_entry(t)
             except FileNotFoundError:
                 self.set_notify_warning('file not found')
             except IndexError:
@@ -580,12 +580,16 @@ class SquashInterface:
     @Decorators.reset_warnings
     def on_click_browse(self):
         idir = os.getcwd() if self.dir is None else self.dir
-        path = filedialog.askopenfilename(initialdir=idir)
+        multiple = False if self.mode is SIModes.OPEN else True
+        paths = filedialog.askopenfilename(initialdir=idir, multiple=multiple)
+
+        path = ', '.join(paths) if multiple is True else paths
 
         self.e_text.delete(0, tk.END)
         self.e_text.insert(0, path)
 
-        self.dir = os.path.dirname(path)
+        if multiple is True:
+            self.dir = os.path.dirname(paths[0])
 
         self.on_carriage_return()
 
