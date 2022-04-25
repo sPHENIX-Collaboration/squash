@@ -593,6 +593,8 @@ class SquashInterface:
 
         if multiple is True:
             self.dir = os.path.dirname(paths[0])
+        else:
+            self.dir = os.path.dirname(path)
 
         self.on_carriage_return()
 
@@ -644,10 +646,13 @@ class SquashInterface:
         self.set_notify_info('{} updated'.format(serial))
 
     def on_click_token(self):
-        path = filedialog.askopenfilename(initialdir=os.getcwd())
+        idir = os.getcwd() if self.dir is None else self.dir
+        path = filedialog.askopenfilename(initialdir=idir)
 
         self.e_token.delete(0, tk.END)
         self.e_token.insert(0, path)
+
+        self.dir = os.path.dirname(path)
 
     @Decorators.reset_warnings
     @Decorators.show_progress
