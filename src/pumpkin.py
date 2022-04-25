@@ -482,11 +482,14 @@ class SquashInterface:
     def reset_notification(self):
         self.l_bar['text'] = ''
 
-    def set_notify_warning(self):
-        self.l_bar['text'] = '⚠️'
+    def set_notify_info(self, message):
+        self.l_bar['text'] = 'ℹ {}'.format(message)
 
-    def set_notify_error(self):
-        self.l_bar['text'] = '🛑'
+    def set_notify_warning(self, message):
+        self.l_bar['text'] = '⚠️ {}'.format(message)
+
+    def set_notify_error(self, message):
+        self.l_bar['text'] = '🛑 {}'.format(message)
 
     class Decorators:
         @classmethod
@@ -551,7 +554,7 @@ class SquashInterface:
             try:
                 self.open_database_file(text)
             except FileNotFoundError:
-                self.set_notify_warning()
+                self.set_notify_warning('file not found')
             else:
                 self.layout_display(SIModes.LOGIN, None)
             return
@@ -568,9 +571,9 @@ class SquashInterface:
             try:
                 self.update_database_entry(text)
             except FileNotFoundError:
-                self.set_notify_warning()
+                self.set_notify_warning('file not found')
             except IndexError:
-                self.set_notify_error()
+                self.set_notify_error('IndexError')
             return
 
     @Decorators.reset_warnings
@@ -587,7 +590,7 @@ class SquashInterface:
         user = self.e_user.get().strip()
 
         if not user:
-            self.set_notify_warning()
+            self.set_notify_warning('user must not be empty')
             return
 
         self.user = user
@@ -606,6 +609,8 @@ class SquashInterface:
             serial, qrcode, location, install, comment
         ])
 
+        self.set_notify_info('{} registered'.format(serial))
+
     @Decorators.reset_warnings
     def on_click_edit(self):
         qrcode = self.e_qrcode.get().strip()
@@ -623,6 +628,8 @@ class SquashInterface:
 
         self.layout_display(self.mode, self.state)
         self.select_database_entry(query)
+
+        self.set_notify_info('{} updated'.format(serial))
 
     def on_click_token(self):
         path = filedialog.askopenfilename(initialdir=os.getcwd())
@@ -643,7 +650,7 @@ class SquashInterface:
             sel = slice_from_string(self.e_summary.get().strip())
 
             if sel is None:
-                self.set_notify_error()
+                self.set_notify_warning('invalid selection')
                 return
 
             files = entry['files'].split(', ')
@@ -652,7 +659,7 @@ class SquashInterface:
             g_max = (sel.stop - 1) // 16 + 1
 
             if not all(files[g_min:g_max]):
-                self.set_notify_error()
+                self.set_notify_warning('data file(s) absent')
                 return
 
             padding = g_min * 16
@@ -696,7 +703,7 @@ class SquashInterface:
             psel = slice_from_string(self.e_pulse.get().strip())
 
             if csel is None or psel is None:
-                self.set_notify_error()
+                self.set_notify_warning('invalid selection')
                 return
 
             files = entry['files'].split(', ')
@@ -705,7 +712,7 @@ class SquashInterface:
             g_max = (csel.stop - 1) // 16 + 1
 
             if not all(files[g_min:g_max]):
-                self.set_notify_error()
+                self.set_notify_warning('data file(s) absent')
                 return
 
             padding = g_min * 16
@@ -770,7 +777,12 @@ class SquashInterface:
             initialdir=os.getcwd(),
             defaultextension='png',
         )
+
+        if not path:
+            return
+
         self.fig.savefig(path)
+        self.set_notify_info('file saved: {}'.format(path))
 
     @Decorators.reset_warnings
     @Decorators.reset_progress
@@ -887,12 +899,12 @@ class SquashInterface:
 
         query = 'WHERE serial = {}'.format(repr(serial))
         if len(self.squash.select(query)) > 0:
-            self.set_notify_warning()
+            self.set_notify_warning('{} already exists'.format(serial))
             return
 
         query = 'WHERE id = {}'.format(repr(qrcode))
         if qrcode != '' and len(self.squash.select(query)) > 0:
-            self.set_notify_warning()
+            self.set_notify_warning('{} already exists'.format(qrcode))
             return
 
         pedes = np.zeros((64, 2))
