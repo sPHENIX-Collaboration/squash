@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import array
 import tkinter as tk
+import tkinter.font
 from tkinter import filedialog, ttk
 
 from display import draw_graph
@@ -39,6 +40,9 @@ class SquashInterface:
         self.mode = SIModes.NONE
         self.state = SIStates.NONE
 
+        self.scale = 1.0
+        self.fontsizes = {}
+
         self.user = None
         self.results = None
         self.query = None
@@ -47,10 +51,21 @@ class SquashInterface:
         self.fig = None
         self.canvas = None
 
+        self.init_root()
+
         self.init_frames()
         self.init_widgets()
 
         self.init_display()
+
+    def init_root(self):
+        self.master.geometry('800x600')
+        self.master.title('pumpkin.py []')
+        self.master.iconphoto(False, ImageTk.PhotoImage(Image.open('icon.png')))
+
+        for name in tkinter.font.names(self.master):
+            font = tkinter.font.Font(root=self.master, name=name, exists=True)
+            self.fontsizes[str(font)] = font['size']
 
     def init_frames(self):
         self.master.columnconfigure(0, weight=1)
@@ -94,6 +109,10 @@ class SquashInterface:
             mode='determinate',
         )
         self.l_bar = ttk.Label(self.frame)
+
+        self.s_zoom = ttk.Scale(self.frame, orient='horizontal', from_=0.5, to=2.0)
+        self.s_zoom['command'] = self.scale_root
+        self.s_zoom.set(1.0)
 
     def init_widgets(self):
         self.b_action = ttk.Button(self.frame, text='action', width=6)
@@ -195,15 +214,18 @@ class SquashInterface:
         self.l_pulse = ttk.Label(self.f_channel, text='pulse', anchor='e')
         self.e_pulse = ttk.Entry(self.f_channel, width=9)
 
-    def init_display(self):
-        self.master.geometry('800x600')
-        self.master.title('pumpkin.py []')
-        self.master.iconphoto(False, ImageTk.PhotoImage(Image.open('icon.png')))
+    def refresh_display(self):
+        self.main.grid_forget()
 
+        self.init_display()
+
+        self.layout_display(self.mode, self.state)
+
+    def init_display(self):
         self.main.grid(column=0, row=0, sticky='nswe')
         self.frame.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
 
-        self.b_power.grid(column=0, row=0)
+        self.b_power.grid(column=0, row=0, sticky='we')
 
         self.h_bar.grid(column=0, row=1, columnspan=7, rowspan=1, sticky='we')
         self.f_box.grid(
@@ -223,7 +245,27 @@ class SquashInterface:
             column=1, row=9, columnspan=6, rowspan=1, padx=4, sticky='we'
         )
 
+        self.s_zoom.grid(
+            column=0, row=8, columnspan=1, rowspan=2, padx=8, sticky='we'
+        )
+
         self.layout_display(self.mode, self.state)
+
+    def scale_root(self, value):
+        scale = float(value)
+
+        if abs((rel := scale / self.scale) - 1.0) < 0.1:
+            return
+
+        self.master.tk.call('tk', 'scaling', rel)
+
+        for name in tkinter.font.names(self.master):
+            font = tkinter.font.Font(root=self.master, name=name, exists=True)
+            font['size'] = round(self.fontsizes[str(font)] * scale)
+
+        self.refresh_display()
+
+        self.scale = scale
 
     def display_figure(self):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.f_box)
@@ -369,9 +411,9 @@ class SquashInterface:
             self.b_power['command'] = self.on_click_close
             self.b_power.unbind('<Key-Return>')
 
-            self.b_insert.grid(column=0, row=2)
-            self.b_update.grid(column=0, row=3)
-            self.b_select.grid(column=0, row=4)
+            self.b_insert.grid(column=0, row=2, sticky='we')
+            self.b_update.grid(column=0, row=3, sticky='we')
+            self.b_select.grid(column=0, row=4, sticky='we')
 
         if state is SIStates.INSERT:
             self.l_serial.grid(column=0, row=0, pady=2, sticky='e')
