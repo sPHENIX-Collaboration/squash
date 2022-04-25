@@ -132,7 +132,7 @@ class SquashInterface:
         self.l_user = ttk.Label(self.f_box, text='user:', anchor='center', width=8)
         self.e_user = ttk.Entry(self.f_box, width=12)
         self.e_user.bind('<Key-Return>', self.on_click_continue)
-        self.b_cont = ttk.Button(self.f_box, text='continue', width=6)
+        self.b_cont = ttk.Button(self.f_box, text='continue', width=8)
         self.b_cont['command'] = self.on_click_continue
 
         self.l_serial = ttk.Label(self.f_box, text='serial #:', anchor='e', width=8)
@@ -164,7 +164,7 @@ class SquashInterface:
 
         self.b_record = ttk.Button(self.f_box, text='record', width=8)
 
-        self.l_token = ttk.Label(self.f_box, text='tp data', anchor='e', width=8)
+        self.l_token = ttk.Label(self.f_box, text='tp data:', anchor='e', width=8)
         self.e_token = ttk.Entry(self.f_box, width=12)
         self.b_token = ttk.Button(self.f_box, text='...', width=1)
         self.b_token['command'] = self.on_click_token
@@ -172,7 +172,7 @@ class SquashInterface:
         self.t_info = ttk.Treeview(self.f_box, selectmode='browse')
         self.t_info.bind('<<TreeviewSelect>>', self.on_select_entry)
         self.t_info['columns'] = ['info']
-        self.t_info.column('#0', width=96)
+        self.t_info.column('#0', width=64)
         self.t_info.heading('info', text='...')
         self.t_info.tag_configure('edit', foreground='red')
         self.t_info.tag_configure('pass', background='#abe9b3')
