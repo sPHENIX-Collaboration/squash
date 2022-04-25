@@ -585,6 +585,9 @@ class SquashInterface:
 
         path = ', '.join(paths) if multiple is True else paths
 
+        if not path:
+            return
+
         self.e_text.delete(0, tk.END)
         self.e_text.insert(0, path)
 
