@@ -93,8 +93,7 @@ class SquashInterface:
             orient='horizontal',
             mode='determinate',
         )
-
-        self.anchor = ttk.Label(self.frame, width=6, anchor='center')
+        self.l_bar = ttk.Label(self.frame)
 
     def init_widgets(self):
         self.b_action = ttk.Button(self.frame, text='action', width=6)
@@ -220,8 +219,9 @@ class SquashInterface:
         self.p_bar.grid(
             column=1, row=8, columnspan=6, rowspan=1, padx=8, sticky='we'
         )
-
-        self.anchor.grid(column=0, row=8, padx=4, sticky='we')
+        self.l_bar.grid(
+            column=1, row=9, columnspan=6, rowspan=1, padx=4, sticky='we'
+        )
 
         self.layout_display(self.mode, self.state)
 
@@ -438,13 +438,13 @@ class SquashInterface:
             self.state = state
 
     def reset_notification(self):
-        self.anchor['text'] = ''
+        self.l_bar['text'] = ''
 
     def set_notify_warning(self):
-        self.anchor['text'] = '⚠️'
+        self.l_bar['text'] = '⚠️'
 
     def set_notify_error(self):
-        self.anchor['text'] = '🛑'
+        self.l_bar['text'] = '🛑'
 
     class Decorators:
         @classmethod
