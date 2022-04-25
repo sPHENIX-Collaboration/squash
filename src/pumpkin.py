@@ -617,6 +617,7 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_edit(self):
+        serial = self.e_serial.get().strip()
         qrcode = self.e_qrcode.get().strip()
         location = self.e_location.get().strip()
         install = self.e_install.get().strip()
