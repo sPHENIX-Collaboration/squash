@@ -276,6 +276,10 @@ class SquashInterface:
         self.canvas.get_tk_widget().pack(padx=4, pady=4, expand=True)
         self.canvas.draw()
 
+        if self.state is SIStates.SELECT:
+            self.b_back.pack(pady=4, side='bottom')
+            self.b_save['state'] = 'normal'
+
     def clear_figure(self):
         if self.canvas is None:
             return
@@ -283,8 +287,9 @@ class SquashInterface:
         self.canvas.get_tk_widget().pack_forget()
         self.canvas = None
 
-        self.b_back.pack_forget()
-        self.b_save['state'] = 'disabled'
+        if self.state is SIStates.SELECT:
+            self.b_back.pack_forget()
+            self.b_save['state'] = 'disabled'
 
     def clear_action_group(self):
         self.e_text.delete(0, tk.END)
@@ -780,9 +785,6 @@ class SquashInterface:
         self.t_info.grid_remove()
 
         self.display_figure()
-
-        self.b_back.pack(pady=4, side='bottom')
-        self.b_save['state'] = 'normal'
 
     @Decorators.reset_warnings
     @Decorators.show_progress
