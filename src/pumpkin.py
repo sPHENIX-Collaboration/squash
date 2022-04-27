@@ -83,26 +83,13 @@ class SquashInterface:
         self.frame.columnconfigure(5, weight=1)
         self.frame.rowconfigure(6, weight=1)
 
-        self.frame.columnconfigure(0, minsize=96)
-        self.frame.columnconfigure(2, minsize=80)
-        self.frame.columnconfigure(3, minsize=80)
-        self.frame.columnconfigure(4, minsize=64)
-        self.frame.columnconfigure(6, minsize=108)
-        self.frame.rowconfigure(0, minsize=32)
-        self.frame.rowconfigure(1, minsize=8)
-        self.frame.rowconfigure(2, minsize=32)
-        self.frame.rowconfigure(3, minsize=32)
-        self.frame.rowconfigure(4, minsize=32)
-        self.frame.rowconfigure(5, minsize=32)
-
         self.h_bar = ttk.Separator(self.frame, orient='horizontal')
         self.f_box = ttk.Frame(self.frame, relief='groove')
 
         self.f_box.columnconfigure(3, weight=1)
+        self.f_box.columnconfigure(5, weight=1)
         self.f_box.rowconfigure(6, weight=1)
-
-        self.f_box.columnconfigure(0, minsize=80)
-        self.f_box.columnconfigure(1, minsize=200)
+        self.f_box.rowconfigure(16, weight=1)
 
         self.p_bar = ttk.Progressbar(
             self.frame,
@@ -130,7 +117,7 @@ class SquashInterface:
         self.b_select = ttk.Button(self.frame, text='select', width=6)
         self.b_select['command'] = self.on_click_select
 
-        self.l_user = ttk.Label(self.f_box, text='user:', anchor='center', width=8)
+        self.l_user = ttk.Label(self.f_box, text='user:', anchor='e', width=6)
         self.e_user = ttk.Entry(self.f_box, width=12)
         self.e_user.bind('<Key-Return>', self.on_click_continue)
         self.b_cont = ttk.Button(self.f_box, text='continue', width=8)
@@ -173,7 +160,6 @@ class SquashInterface:
         self.t_info = ttk.Treeview(self.f_box, selectmode='browse')
         self.t_info.bind('<<TreeviewSelect>>', self.on_select_entry)
         self.t_info['columns'] = ['info']
-        self.t_info.column('#0', width=64)
         self.t_info.heading('info', text='...')
         self.t_info.tag_configure('edit', foreground='red')
         self.t_info.tag_configure('pass', background='#abe9b3')
@@ -226,8 +212,7 @@ class SquashInterface:
         self.main.grid(column=0, row=0, sticky='nswe')
         self.frame.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
 
-        self.b_power.grid(column=0, row=0, sticky='we')
-
+        self.b_power.grid(column=0, row=0, padx=8, pady=2, sticky='we')
         self.h_bar.grid(column=0, row=1, columnspan=7, rowspan=1, sticky='we')
         self.f_box.grid(
             column=1,
@@ -239,16 +224,10 @@ class SquashInterface:
             sticky='nswe',
         )
 
-        self.p_bar.grid(
-            column=1, row=8, columnspan=6, rowspan=1, padx=8, sticky='we'
-        )
-        self.l_bar.grid(
-            column=1, row=9, columnspan=6, rowspan=1, padx=4, sticky='we'
-        )
+        self.p_bar.grid(column=1, row=8, columnspan=6, padx=8, sticky='we')
+        self.l_bar.grid(column=1, row=9, columnspan=6, padx=4, sticky='we')
 
-        self.s_zoom.grid(
-            column=0, row=8, columnspan=1, rowspan=2, padx=8, sticky='we'
-        )
+        self.s_zoom.grid(column=0, row=8, rowspan=2, padx=8, sticky='we')
 
         self.layout_display(self.mode, self.state)
 
@@ -273,22 +252,22 @@ class SquashInterface:
             self.clear_figure()
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.f_box)
-        self.canvas.get_tk_widget().pack(padx=4, pady=4, expand=True)
+        self.canvas.get_tk_widget().grid(column=4, row=7, padx=4, pady=4)
         self.canvas.draw()
 
         if self.state is SIStates.SELECT:
-            self.b_back.pack(pady=4, side='bottom')
+            self.b_back.grid(column=4, row=8, padx=4, pady=4)
             self.b_save['state'] = 'normal'
 
     def clear_figure(self):
         if self.canvas is None:
             return
 
-        self.canvas.get_tk_widget().pack_forget()
+        self.canvas.get_tk_widget().grid_forget()
         self.canvas = None
 
         if self.state is SIStates.SELECT:
-            self.b_back.pack_forget()
+            self.b_back.grid_forget()
             self.b_save['state'] = 'disabled'
 
     def clear_action_group(self):
@@ -404,8 +383,8 @@ class SquashInterface:
             self.e_text.focus_set()
 
         if mode is SIModes.LOGIN:
-            self.l_user.grid(column=0, row=0, pady=2, sticky='e')
-            self.e_user.grid(column=1, row=0, pady=2, sticky='we')
+            self.l_user.grid(column=0, row=0, padx=2, pady=1, sticky='we')
+            self.e_user.grid(column=1, row=0, padx=2, pady=1, sticky='we')
 
             self.b_cont.grid(column=0, row=1, columnspan=2, rowspan=1, pady=4)
 
@@ -416,19 +395,19 @@ class SquashInterface:
             self.b_power['command'] = self.on_click_close
             self.b_power.unbind('<Key-Return>')
 
-            self.b_insert.grid(column=0, row=2, sticky='we')
-            self.b_update.grid(column=0, row=3, sticky='we')
-            self.b_select.grid(column=0, row=4, sticky='we')
+            self.b_insert.grid(column=0, row=2, padx=8, sticky='we')
+            self.b_update.grid(column=0, row=3, padx=8, sticky='we')
+            self.b_select.grid(column=0, row=4, padx=8, sticky='we')
 
         if state is SIStates.INSERT:
-            self.l_serial.grid(column=0, row=0, pady=2, sticky='e')
-            self.e_serial.grid(column=1, row=0, pady=2, sticky='we')
-            self.l_qrcode.grid(column=0, row=1, pady=2, sticky='e')
-            self.e_qrcode.grid(column=1, row=1, pady=2, sticky='we')
-            self.l_location.grid(column=0, row=2, pady=2, sticky='e')
-            self.e_location.grid(column=1, row=2, pady=2, sticky='we')
-            self.l_comment.grid(column=0, row=4, pady=2, sticky='e')
-            self.e_comment.grid(column=1, row=4, pady=2, sticky='we')
+            self.l_serial.grid(column=0, row=0, padx=2, pady=1, sticky='we')
+            self.e_serial.grid(column=1, row=0, padx=2, pady=1, sticky='we')
+            self.l_qrcode.grid(column=0, row=1, padx=2, pady=1, sticky='we')
+            self.e_qrcode.grid(column=1, row=1, padx=2, pady=1, sticky='we')
+            self.l_location.grid(column=0, row=2, padx=2, pady=1, sticky='we')
+            self.e_location.grid(column=1, row=2, padx=2, pady=1, sticky='we')
+            self.l_comment.grid(column=0, row=4, padx=2,pady=1, sticky='we')
+            self.e_comment.grid(column=1, row=4, padx=2,pady=1, sticky='we')
 
             self.b_record['text'] = 'register'
             self.b_record['command'] = self.on_click_register
@@ -459,8 +438,8 @@ class SquashInterface:
             self.t_info.grid(
                 column=0,
                 row=6,
-                columnspan=4,
-                rowspan=1,
+                columnspan=6,
+                rowspan=11,
                 padx=4,
                 pady=4,
                 sticky='nswe',
@@ -704,17 +683,17 @@ class SquashInterface:
                 'yrange': (0, 18000, 4000),
                 'interval': 4,
                 'labels': ('pulse #', 'pulse maximum'),
-                'canvas': (3.6, 3.0),
-                'margins': (1.5, 0.2, 0.2, 1.0),
                 'fmt_str': [
-                    'board {}',
+                    '{}',
                     'channel {}',
-                    '[{:.0f}, {:.0f}]',
+                    'pedestal: {:.0f}',
+                    'gain: {:.0f}',
                 ],
                 'fmt_data': [
                     [(entry['serial'],)] * _y.shape[0],
                     list(zip(range(sel.start, sel.stop, sel.step))),
-                    _p.tolist(),
+                    [(x[0],) for x in _p.tolist()],
+                    [(x[1],) for x in _p.tolist()],
                 ],
                 'output': None,
             }
@@ -763,11 +742,9 @@ class SquashInterface:
                 'yrange': (0, 18000, 4000),
                 'interval': 4,
                 'labels': ('sample #', 'ADC value'),
-                'info': [0.92, 0.84, 0.09, 'right'],
-                'canvas': (3.6, 3.0),
-                'margins': (1.5, 0.2, 0.2, 1.0),
+                'info': [0.92, 0.87, 0.08, 'right'],
                 'fmt_str': [
-                    'serial {}',
+                    '{}',
                     'channel {}',
                     'pulse {}',
                 ],
@@ -831,12 +808,12 @@ class SquashInterface:
 
         self.f_draw.grid(column=1, row=7, columnspan=6, rowspan=1, sticky='nswe')
         self.n_draw.grid(column=0, row=0, columnspan=1, rowspan=4, sticky='nswe')
-        self.l_summary.grid(column=0, row=0, sticky='we')
-        self.e_summary.grid(column=1, row=0, sticky='we')
-        self.l_channel.grid(column=0, row=0, sticky='we')
-        self.e_channel.grid(column=1, row=0, sticky='we')
-        self.l_pulse.grid(column=0, row=1, sticky='we')
-        self.e_pulse.grid(column=1, row=1, sticky='we')
+        self.l_summary.grid(column=0, row=0, padx=2, sticky='we')
+        self.e_summary.grid(column=1, row=0, padx=2, sticky='we')
+        self.l_channel.grid(column=0, row=0, padx=2, sticky='we')
+        self.e_channel.grid(column=1, row=0, padx=2, sticky='we')
+        self.l_pulse.grid(column=0, row=1, padx=2, sticky='we')
+        self.e_pulse.grid(column=1, row=1, padx=2, sticky='we')
 
         self.b_draw.grid(column=1, row=1, sticky='we')
         self.b_save.grid(column=1, row=2, sticky='we')
@@ -865,24 +842,24 @@ class SquashInterface:
         self.s_calib.set(' G/P: {}'.format(entry['status'][0]))
         self.s_token.set(' TP: {}'.format(entry['status'][1]))
 
-        self.l_serial.grid(column=0, row=7, pady=2, sticky='e')
-        self.e_serial.grid(column=1, row=7, pady=2, sticky='we')
-        self.l_qrcode.grid(column=0, row=8, pady=2, sticky='e')
-        self.e_qrcode.grid(column=1, row=8, pady=2, sticky='we')
-        self.l_location.grid(column=0, row=9, pady=2, sticky='e')
-        self.e_location.grid(column=1, row=9, pady=2, sticky='we')
-        self.l_comment.grid(column=0, row=11, pady=2, sticky='e')
-        self.e_comment.grid(column=1, row=11, pady=2, sticky='we')
-        self.l_token.grid(column=0, row=12, pady=2, sticky='e')
-        self.e_token.grid(column=1, row=12, pady=2, sticky='we')
-        self.b_token.grid(column=2, row=12, padx=4, pady=2, sticky='we')
-        self.l_status.grid(column=0, row=13, rowspan=2, sticky='e')
-        self.s_calib.grid(column=1, row=13, sticky='w')
-        self.s_token.grid(column=1, row=14, sticky='w')
+        self.l_serial.grid(column=0, row=17, padx=2, pady=1, sticky='we')
+        self.e_serial.grid(column=1, row=17, padx=2, pady=1, sticky='we')
+        self.l_qrcode.grid(column=0, row=18, padx=2, pady=1, sticky='we')
+        self.e_qrcode.grid(column=1, row=18, padx=2, pady=1, sticky='we')
+        self.l_location.grid(column=0, row=19, padx=2, pady=1, sticky='we')
+        self.e_location.grid(column=1, row=19, padx=2, pady=1, sticky='we')
+        self.l_comment.grid(column=0, row=21, padx=2, pady=1, sticky='we')
+        self.e_comment.grid(column=1, row=21, padx=2, pady=1, sticky='we')
+        self.l_token.grid(column=0, row=22, padx=2, pady=1, sticky='we')
+        self.e_token.grid(column=1, row=22, padx=2, pady=1, sticky='we')
+        self.b_token.grid(column=2, row=22, padx=2, pady=1, sticky='we')
+        self.l_status.grid(column=0, row=23, rowspan=2, padx=2, sticky='we')
+        self.s_calib.grid(column=1, row=23, padx=2, sticky='w')
+        self.s_token.grid(column=1, row=24, padx=2, sticky='w')
 
         self.b_record['text'] = 'edit'
         self.b_record['command'] = self.on_click_edit
-        self.b_record.grid(column=0, row=15, columnspan=2, rowspan=1, pady=4)
+        self.b_record.grid(column=0, row=25, columnspan=2, rowspan=1, pady=4)
 
     def set_progress(self, i):
         self.p_bar['value'] = i
@@ -1008,10 +985,8 @@ class SquashInterface:
             'yrange': (0, 18000, 4000),
             'interval': 4,
             'labels': ('pulse #', 'pulse maximum'),
-            'canvas': (3.6, 3.0),
-            'margins': (1.5, 0.2, 0.2, 1.0),
             'fmt_str': [
-                'serial {}',
+                '{}',
                 'channel {}',
                 'pedestal: {:.0f}',
                 'gain: {:.0f}',

@@ -13,10 +13,11 @@ def draw_graph(
     interval,
     labels,
     xscale=(0, 1),
-    info=[0.08, 0.84, 0.09, 'left'],
+    info=[0.08, 0.87, 0.08, 'left'],
     layout=None,
-    canvas=(4.0, 3.0),
-    margins=(0.8, 0.5, 0.5, 0.5),
+    canvas=(1.25, 1.05),
+    margins=(0.6, 0.1, 0.1, 0.4),
+    fontsizes=(6, 6, 6),
     fmt_str=None,
     fmt_data=None,
     output=True,
@@ -60,9 +61,9 @@ def draw_graph(
 
     for (i, j), ax in np.ndenumerate(axs):
         if i == rows - 1:
-            ax.set_xlabel(labels[0], fontsize=6)
+            ax.set_xlabel(labels[0], fontsize=fontsizes[0])
         if j == 0:
-            ax.set_ylabel(labels[1], fontsize=6)
+            ax.set_ylabel(labels[1], fontsize=fontsizes[0])
 
     for (i,), ax in np.ndenumerate(axs.ravel()):
         ax.set_ylim(top=yrange[1], bottom=yrange[0])
@@ -70,7 +71,7 @@ def draw_graph(
         ax.xaxis.set_ticks(range(x[0], x[-1], interval))
         ax.yaxis.set_ticks(range(*yrange))
 
-        ax.tick_params(axis='both', which='major', labelsize=5)
+        ax.tick_params(axis='both', which='major', labelsize=fontsizes[1])
 
         try:
             ax.errorbar(x, y[i], yerr=yerr[i], fmt='bo', markersize=1.0)
@@ -83,7 +84,7 @@ def draw_graph(
                         f_str.format(*f_data[i]),
                         xy=(xinfo, yinfo),
                         xycoords='axes fraction',
-                        fontsize=5,
+                        fontsize=fontsizes[2],
                         ha=xalign,
                     )
 
