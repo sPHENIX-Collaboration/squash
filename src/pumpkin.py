@@ -247,7 +247,7 @@ class SquashInterface:
 
         self.scale = scale
 
-    def display_figure(self):
+    def place_figure(self):
         if self.canvas is not None:
             self.clear_figure()
 
@@ -275,6 +275,26 @@ class SquashInterface:
         self.e_text.grid_forget()
         self.b_action.grid_forget()
 
+    def place_record_group(self):
+        self.l_serial.grid(column=0, row=17, padx=2, pady=1, sticky='we')
+        self.e_serial.grid(column=1, row=17, padx=2, pady=1, sticky='we')
+        self.l_qrcode.grid(column=0, row=18, padx=2, pady=1, sticky='we')
+        self.e_qrcode.grid(column=1, row=18, padx=2, pady=1, sticky='we')
+        self.l_location.grid(column=0, row=19, padx=2, pady=1, sticky='we')
+        self.e_location.grid(column=1, row=19, padx=2, pady=1, sticky='we')
+        self.l_comment.grid(column=0, row=21, padx=2, pady=1, sticky='we')
+        self.e_comment.grid(column=1, row=21, padx=2, pady=1, sticky='we')
+        self.l_token.grid(column=0, row=22, padx=2, pady=1, sticky='we')
+        self.e_token.grid(column=1, row=22, padx=2, pady=1, sticky='we')
+        self.b_token.grid(column=2, row=22, padx=2, pady=1, sticky='we')
+        self.l_status.grid(column=0, row=23, rowspan=2, padx=2, sticky='we')
+        self.s_calib.grid(column=1, row=23, padx=2, sticky='w')
+        self.s_token.grid(column=1, row=24, padx=2, sticky='w')
+
+        self.b_record['text'] = 'edit'
+        self.b_record['command'] = self.on_click_edit
+        self.b_record.grid(column=0, row=25, columnspan=2, rowspan=1, pady=4)
+
     def clear_record_group(self):
         self.e_serial.configure(state='normal')
 
@@ -301,6 +321,19 @@ class SquashInterface:
         self.s_token.grid_forget()
 
         self.b_record.grid_forget()
+
+    def place_draw_group(self):
+        self.f_draw.grid(column=1, row=7, columnspan=6, rowspan=1, sticky='nswe')
+        self.n_draw.grid(column=0, row=0, columnspan=1, rowspan=4, sticky='nswe')
+        self.l_summary.grid(column=0, row=0, padx=2, sticky='we')
+        self.e_summary.grid(column=1, row=0, padx=2, sticky='we')
+        self.l_channel.grid(column=0, row=0, padx=2, sticky='we')
+        self.e_channel.grid(column=1, row=0, padx=2, sticky='we')
+        self.l_pulse.grid(column=0, row=1, padx=2, sticky='we')
+        self.e_pulse.grid(column=1, row=1, padx=2, sticky='we')
+
+        self.b_draw.grid(column=1, row=1, sticky='we')
+        self.b_save.grid(column=1, row=2, sticky='we')
 
     def clear_draw_group(self):
         self.f_draw.grid_forget()
@@ -761,7 +794,7 @@ class SquashInterface:
         self.clear_record_group()
         self.t_info.grid_remove()
 
-        self.display_figure()
+        self.place_figure()
 
     @Decorators.reset_warnings
     @Decorators.show_progress
@@ -805,18 +838,7 @@ class SquashInterface:
         entry = self.squash.label(self.results[self.index])
 
         self.f_draw['text'] = entry['serial']
-
-        self.f_draw.grid(column=1, row=7, columnspan=6, rowspan=1, sticky='nswe')
-        self.n_draw.grid(column=0, row=0, columnspan=1, rowspan=4, sticky='nswe')
-        self.l_summary.grid(column=0, row=0, padx=2, sticky='we')
-        self.e_summary.grid(column=1, row=0, padx=2, sticky='we')
-        self.l_channel.grid(column=0, row=0, padx=2, sticky='we')
-        self.e_channel.grid(column=1, row=0, padx=2, sticky='we')
-        self.l_pulse.grid(column=0, row=1, padx=2, sticky='we')
-        self.e_pulse.grid(column=1, row=1, padx=2, sticky='we')
-
-        self.b_draw.grid(column=1, row=1, sticky='we')
-        self.b_save.grid(column=1, row=2, sticky='we')
+        self.place_draw_group()
 
     def on_edit_entry(self, event):
         if not (selection := event.widget.selection()):
@@ -842,24 +864,7 @@ class SquashInterface:
         self.s_calib.set(' G/P: {}'.format(entry['status'][0]))
         self.s_token.set(' TP: {}'.format(entry['status'][1]))
 
-        self.l_serial.grid(column=0, row=17, padx=2, pady=1, sticky='we')
-        self.e_serial.grid(column=1, row=17, padx=2, pady=1, sticky='we')
-        self.l_qrcode.grid(column=0, row=18, padx=2, pady=1, sticky='we')
-        self.e_qrcode.grid(column=1, row=18, padx=2, pady=1, sticky='we')
-        self.l_location.grid(column=0, row=19, padx=2, pady=1, sticky='we')
-        self.e_location.grid(column=1, row=19, padx=2, pady=1, sticky='we')
-        self.l_comment.grid(column=0, row=21, padx=2, pady=1, sticky='we')
-        self.e_comment.grid(column=1, row=21, padx=2, pady=1, sticky='we')
-        self.l_token.grid(column=0, row=22, padx=2, pady=1, sticky='we')
-        self.e_token.grid(column=1, row=22, padx=2, pady=1, sticky='we')
-        self.b_token.grid(column=2, row=22, padx=2, pady=1, sticky='we')
-        self.l_status.grid(column=0, row=23, rowspan=2, padx=2, sticky='we')
-        self.s_calib.grid(column=1, row=23, padx=2, sticky='w')
-        self.s_token.grid(column=1, row=24, padx=2, sticky='w')
-
-        self.b_record['text'] = 'edit'
-        self.b_record['command'] = self.on_click_edit
-        self.b_record.grid(column=0, row=25, columnspan=2, rowspan=1, pady=4)
+        self.place_record_group()
 
     def set_progress(self, i):
         self.p_bar['value'] = i
@@ -1002,7 +1007,7 @@ class SquashInterface:
 
         self.fig = draw_graph(y, None, **pulse_max_vs_step_disp_opts)
 
-        self.display_figure()
+        self.place_figure()
 
     def _one(self, node, key, tags, values, label=None):
         text = key if label is None else label
