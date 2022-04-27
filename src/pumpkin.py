@@ -84,7 +84,17 @@ class SquashInterface:
         self.frame.rowconfigure(6, weight=1)
 
         self.h_bar = ttk.Separator(self.frame, orient='horizontal')
-        self.f_box = ttk.Frame(self.frame, relief='groove')
+        self.f_view = ttk.Frame(self.frame, relief='groove')
+
+        self.f_view.columnconfigure(0, weight=1)
+        self.f_view.rowconfigure(0, weight=1)
+
+        self.c_view = tk.Canvas(self.f_view, highlightthickness=0)
+
+        self.c_view.columnconfigure(0, weight=1)
+        self.c_view.rowconfigure(0, weight=1)
+
+        self.f_box = ttk.Frame(self.c_view)
 
         self.f_box.columnconfigure(3, weight=1)
         self.f_box.columnconfigure(5, weight=1)
@@ -201,6 +211,16 @@ class SquashInterface:
         self.l_pulse = ttk.Label(self.f_channel, text='pulse', anchor='e')
         self.e_pulse = ttk.Entry(self.f_channel, width=9)
 
+        self.sb_x = ttk.Scrollbar(self.f_view, orient='horizontal')
+        self.sb_x.config(command=self.c_view.xview)
+        self.sb_y = ttk.Scrollbar(self.f_view, orient='vertical')
+        self.sb_y.config(command=self.c_view.yview)
+        self.sb_r = ttk.Label(self.f_view, text='⟳')
+        self.sb_r.bind('<ButtonRelease-1>', self.refresh_figure)
+
+        self.c_view.config(xscrollcommand=self.sb_x.set)
+        self.c_view.config(yscrollcommand=self.sb_y.set)
+
     def refresh_display(self):
         self.main.grid_forget()
 
@@ -214,7 +234,7 @@ class SquashInterface:
 
         self.b_power.grid(column=0, row=0, padx=8, pady=2, sticky='we')
         self.h_bar.grid(column=0, row=1, columnspan=7, rowspan=1, sticky='we')
-        self.f_box.grid(
+        self.f_view.grid(
             column=1,
             row=2,
             columnspan=6,
@@ -223,6 +243,20 @@ class SquashInterface:
             pady=4,
             sticky='nswe',
         )
+
+        self.c_view.grid(column=0, row=0, padx=2, pady=2, sticky='nswe')
+        self.w_view = self.c_view.create_window(
+            0, 0, window=self.f_box, anchor='nw'
+        )
+
+        def _fill_canvas(event):
+            if event.width > self.f_box.winfo_width():
+                self.c_view.itemconfig(self.w_view, width=event.width)
+
+            if event.height > self.f_box.winfo_height():
+                self.c_view.itemconfig(self.w_view, height=event.height)
+
+        self.c_view.bind('<Configure>', _fill_canvas)
 
         self.p_bar.grid(column=1, row=8, columnspan=6, padx=8, sticky='we')
         self.l_bar.grid(column=1, row=9, columnspan=6, padx=4, sticky='we')
@@ -247,28 +281,63 @@ class SquashInterface:
 
         self.scale = scale
 
+    def place_canvas(self):
+        self.canvas.get_tk_widget().grid(column=4, row=7, sticky='nswe')
+
+        self.sb_x.grid(column=0, row=1, padx=2, pady=2, sticky='nswe')
+        self.sb_y.grid(column=1, row=0, padx=2, pady=2, sticky='nswe')
+        self.sb_r.grid(column=1, row=1, padx=2, pady=2, sticky='nswe')
+
+        if self.state is SIStates.SELECT:
+            self.b_save['state'] = 'normal'
+            self.b_back.grid(column=4, row=8, padx=4, pady=4)
+
+    def clear_canvas(self):
+        self.canvas.get_tk_widget().grid_forget()
+
+        self.sb_x.grid_forget()
+        self.sb_y.grid_forget()
+        self.sb_r.grid_forget()
+
+        if self.state is SIStates.SELECT:
+            self.b_save['state'] = 'disabled'
+            self.b_back.grid_forget()
+
+    def update_bounds(self):
+        self.master.update()
+
+        if (width := self.f_box.winfo_reqwidth()) > self.f_view.winfo_width() - 4:
+            self.c_view.itemconfig(self.w_view, width=width)
+
+        if (height := self.f_box.winfo_reqheight()) > self.f_view.winfo_height() - 4:
+            self.c_view.itemconfig(self.w_view, height=height)
+
+        self.c_view.config(scrollregion=(0, 0, width, height))
+
+    def refresh_figure(self, event):
+        self.clear_canvas()
+        self.place_canvas()
+
+        self.update_bounds()
+
     def place_figure(self):
         if self.canvas is not None:
             self.clear_figure()
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.f_box)
-        self.canvas.get_tk_widget().grid(column=4, row=7, padx=4, pady=4)
         self.canvas.draw()
 
-        if self.state is SIStates.SELECT:
-            self.b_back.grid(column=4, row=8, padx=4, pady=4)
-            self.b_save['state'] = 'normal'
+        self.place_canvas()
+
+        self.update_bounds()
 
     def clear_figure(self):
         if self.canvas is None:
             return
 
-        self.canvas.get_tk_widget().grid_forget()
-        self.canvas = None
+        self.clear_canvas()
 
-        if self.state is SIStates.SELECT:
-            self.b_back.grid_forget()
-            self.b_save['state'] = 'disabled'
+        self.canvas = None
 
     def clear_action_group(self):
         self.e_text.delete(0, tk.END)
@@ -819,6 +888,9 @@ class SquashInterface:
         self.clear_figure()
 
         self.t_info.grid()
+
+        self.c_view.xview_moveto(0)
+        self.c_view.yview_moveto(0)
 
     def on_select_location(self, event):
         if event.widget.get().strip() != 'BNL (sPHENIX)':
