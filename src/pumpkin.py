@@ -281,6 +281,10 @@ class SquashInterface:
 
         self.scale = scale
 
+    def reset_view(self):
+        self.c_view.xview_moveto(0)
+        self.c_view.yview_moveto(0)
+
     def place_canvas(self):
         self.canvas.get_tk_widget().grid(column=4, row=7, sticky='nswe')
 
@@ -466,6 +470,8 @@ class SquashInterface:
             self.index = None
 
     def place_display(self, mode=None, state=None):
+        self.reset_view()
+
         if mode is SIModes.NONE:
             self.b_power['text'] = 'open'
             self.b_power['command'] = self.on_click_open
@@ -888,11 +894,9 @@ class SquashInterface:
     @Decorators.reset_progress
     def on_click_back(self):
         self.clear_figure()
+        self.reset_view()
 
         self.t_info.grid()
-
-        self.c_view.xview_moveto(0)
-        self.c_view.yview_moveto(0)
 
     def on_select_location(self, event):
         if event.widget.get().strip() != 'BNL (sPHENIX)':
