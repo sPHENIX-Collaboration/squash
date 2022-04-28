@@ -772,7 +772,8 @@ class SquashInterface:
 
             for f in files[g_min:g_max]:
                 _, _, _, y, pars, _ = self.squash.parse(
-                    f, callback=self.set_progress
+                    os.path.join(os.path.dirname(self.squash.path), f),
+                    callback=self.set_progress
                 )
 
                 _y = np.vstack((_y, y))
@@ -824,8 +825,9 @@ class SquashInterface:
             _s = np.zeros((40, padding, 28))
 
             for f in files[g_min:g_max]:
-                _, mean, sigma, _, _, _ = self.squash.object.parser(
-                    f, callback=self.set_progress
+                _, mean, sigma, _, _, _ = self.squash.parse(
+                    os.path.join(os.path.dirname(self.squash.path), f),
+                    callback=self.set_progress
                 )
 
                 _m = np.concatenate((_m, mean), axis=1)
@@ -1022,7 +1024,10 @@ class SquashInterface:
         data = self.squash.label(self.squash.select(condition)[0])
 
         files = data['files'].split(', ')
-        files[group] = os.path.relpath(entry['files'].split(', ')[group])
+        files[group] = os.path.relpath(
+            entry['files'].split(', ')[group],
+            os.path.dirname(self.squash.path)
+        )
 
         history = entry['history'] + ' <{}>'.format(self.user)
 
