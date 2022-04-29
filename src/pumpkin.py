@@ -265,6 +265,10 @@ class SquashInterface:
 
         self.s_zoom.grid(column=0, row=8, rowspan=2, padx=8, sticky='we')
 
+        self.sb_x.grid(column=0, row=1, padx=2, pady=2, sticky='nswe')
+        self.sb_y.grid(column=1, row=0, padx=2, pady=2, sticky='nswe')
+        self.sb_r.grid(column=1, row=1, padx=2, pady=2, sticky='nswe')
+
         self.layout_display(self.mode, self.state)
 
     def scale_root(self, value):
@@ -290,20 +294,12 @@ class SquashInterface:
     def place_canvas(self):
         self.canvas.get_tk_widget().grid(column=4, row=7, sticky='nswe')
 
-        self.sb_x.grid(column=0, row=1, padx=2, pady=2, sticky='nswe')
-        self.sb_y.grid(column=1, row=0, padx=2, pady=2, sticky='nswe')
-        self.sb_r.grid(column=1, row=1, padx=2, pady=2, sticky='nswe')
-
         if self.state is SIStates.SELECT:
             self.b_save['state'] = 'normal'
             self.b_back.grid(column=4, row=8, padx=4, pady=4)
 
     def clear_canvas(self):
         self.canvas.get_tk_widget().grid_forget()
-
-        self.sb_x.grid_forget()
-        self.sb_y.grid_forget()
-        self.sb_r.grid_forget()
 
         if self.state is SIStates.SELECT:
             self.b_save['state'] = 'disabled'
@@ -321,8 +317,9 @@ class SquashInterface:
         self.c_view.config(scrollregion=(0, 0, width, height))
 
     def refresh_figure(self, event):
-        self.clear_canvas()
-        self.place_canvas()
+        if self.canvas is not None:
+            self.clear_canvas()
+            self.place_canvas()
 
         self.update_bounds()
 
