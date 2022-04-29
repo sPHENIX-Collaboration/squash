@@ -3,6 +3,7 @@
 from datetime import datetime
 from enum import Enum
 import os
+import re
 
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -149,6 +150,7 @@ class SquashInterface:
         self.e_location.set('  UC Boulder')
         self.e_location.bind('<<ComboboxSelected>>', self.on_select_location)
 
+        self.l_install = ttk.Label(self.f_box, text='install:', anchor='e', width=8)
         self.e_install = ttk.Entry(self.f_box, width=12)
 
         self.l_comment = ttk.Label(self.f_box, text='comment:', anchor='e', width=8)
@@ -348,6 +350,17 @@ class SquashInterface:
         self.e_text.grid_forget()
         self.b_action.grid_forget()
 
+    def place_install_group(self):
+        row = 3 if self.state is SIStates.INSERT else 20
+
+        self.l_install.grid(column=0, row=row, padx=2, pady=1, sticky='we')
+        self.e_install.grid(column=1, row=row, padx=2, pady=1, sticky='we')
+
+    def clear_install_group(self):
+        self.l_install.grid_forget()
+        self.e_install.delete(0, tk.END)
+        self.e_install.grid_forget()
+
     def place_record_group(self):
         self.l_serial.grid(column=0, row=17, padx=2, pady=1, sticky='we')
         self.e_serial.grid(column=1, row=17, padx=2, pady=1, sticky='we')
@@ -380,6 +393,7 @@ class SquashInterface:
         self.l_location.grid_forget()
         self.e_location.delete(0, tk.END)
         self.e_location.grid_forget()
+        self.l_install.grid_forget()
         self.e_install.delete(0, tk.END)
         self.e_install.grid_forget()
         self.l_comment.grid_forget()
@@ -900,12 +914,9 @@ class SquashInterface:
 
     def on_select_location(self, event):
         if event.widget.get().strip() != 'BNL (sPHENIX)':
-            self.e_install.delete(0, tk.END)
-            self.e_install.grid_forget()
-            return
-
-        row = 3 if self.state is SIStates.INSERT else 10
-        self.e_install.grid(column=1, row=row, pady=2, sticky='we')
+            self.clear_install_group()
+        else:
+            self.place_install_group()
 
     def on_select_entry(self, event):
         if not (selection := event.widget.selection()):
@@ -934,15 +945,22 @@ class SquashInterface:
         self.e_qrcode.delete(0, tk.END)
         self.e_qrcode.insert(0, entry['id'])
 
-        location = entry['location'].split(', ')[-1].split('[')[0]
-        self.e_location.set('  {}'.format(location.strip()))
+        p = re.compile('(.*) \[.*\] <.*>')
+        location = p.match(entry['location'].split(', ')[-1]).group(1)
+        self.e_location.set('  {}'.format(location))
 
+        self.e_install.delete(0, tk.END)
+        self.e_install.insert(0, entry['install'].strip())
+
+        self.e_token.delete(0, tk.END)
         self.e_token.insert(0, entry['files'].split(', ')[-1])
 
         self.s_calib.set(' G/P: {}'.format(entry['status'][0]))
         self.s_token.set(' TP: {}'.format(entry['status'][1]))
 
         self.place_record_group()
+
+        self.e_location.event_generate('<<ComboboxSelected>>')
 
     def set_progress(self, i):
         self.p_bar['value'] = i
