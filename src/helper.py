@@ -11,14 +11,26 @@ class SquashHelper:
     squash = None
     path = None
     table = None
-    version = None
 
     def __init__(self, path, table='data', version='auto'):
         self.squash = Squash(path)
         self.path = path
         self.table = table
-        self.version = version
-        self.object = formats.factory[version]()
+
+        def _set(self, version):
+            if version is None:
+                self.version = None
+                self.object = None
+            else:
+                self.version = version
+                self.object = formats.factory[version]()
+
+        if version is None:
+            _set(self, None)
+        elif version == 'auto':
+            _set(self, self.check(self.path, self.table))
+        else:
+            _set(self, version)
 
     def close(self):
         self.squash.close()
@@ -28,6 +40,23 @@ class SquashHelper:
         self.table = None
         self.version = None
         self.object = None
+
+    def check(self, path, table='data'):
+        info = self.squash.query('pragma table_info({})'.format(table))
+
+        versions = [
+            k
+            for k, v in formats.factory.items()
+            if (
+                len(info) == len(v.structure)
+                and all(x[1] in v.structure for x in info)
+            )
+        ]
+
+        if not versions:
+            return None
+
+        return versions[0]
 
     def create(self):
         structure = self.object.structure
