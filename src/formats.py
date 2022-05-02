@@ -67,7 +67,7 @@ class DataFormat(ABC):
         return all(v in cls.datatypes for v in structure.values())
 
     @abstractmethod
-    def parser(self, raw, output='entry'):
+    def parser(self, raw):
         pass
 
 
@@ -277,7 +277,25 @@ class DataFormat_v1(DataFormat):
         return entry, mean, sigma, y, pars, errs
 
 
+class DataFormat_v2(DataFormat):
+    structure = {
+        'serial': 'TEXT',
+        'id': 'TEXT',
+        'location': 'TEXT',
+        'history': 'TEXT',
+        'comment': 'TEXT',
+        'status': 'TEXT',
+        'files': 'TEXT',
+        'install': 'TEXT',
+    }
+
+    def parser(self, raw):
+        pass
+
+
 factory = {
-    'auto': DataFormat_v1,
+    'adc': DataFormat_v1,
+    'xmit': DataFormat_v2,
     'v1': DataFormat_v1,
+    'v2': DataFormat_v2,
 }
