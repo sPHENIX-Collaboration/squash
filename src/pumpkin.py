@@ -372,7 +372,9 @@ class SquashInterface:
         self.e_token.grid(column=1, row=22, padx=2, pady=1, sticky='we')
         self.b_token.grid(column=2, row=22, padx=2, pady=1, sticky='we')
         self.l_status.grid(column=0, row=23, rowspan=2, padx=2, sticky='we')
-        self.s_calib.grid(column=1, row=23, padx=2, sticky='w')
+
+        if self.version == 'adc':
+            self.s_calib.grid(column=1, row=23, padx=2, sticky='w')
         self.s_token.grid(column=1, row=24, padx=2, sticky='w')
 
         self.b_record['text'] = 'edit'
@@ -516,7 +518,8 @@ class SquashInterface:
             self.b_power.unbind('<Key-Return>')
 
             self.b_insert.grid(column=0, row=2, padx=8, sticky='we')
-            self.b_update.grid(column=0, row=3, padx=8, sticky='we')
+            if self.version == 'adc':
+                self.b_update.grid(column=0, row=3, padx=8, sticky='we')
             self.b_select.grid(column=0, row=4, padx=8, sticky='we')
 
         if state is SIStates.INSERT:
@@ -736,7 +739,9 @@ class SquashInterface:
         install = self.e_install.get().strip()
         comment = self.e_comment.get().strip()
         token = self.e_token.get().strip()
-        status = self.s_calib.get()[-1] + self.s_token.get()[-1]
+        status = (
+            self.s_calib.get()[-1] if self.version == 'adc' else ''
+        ) + self.s_token.get()[-1]
 
         self.modify_database_entry([
             qrcode, location, install, comment, token, status
@@ -922,6 +927,9 @@ class SquashInterface:
 
         self.index = int(selection[0].split('_')[0])
 
+        if self.version != 'adc':
+            return
+
         entry = self.squash.label(self.results[self.index])
 
         self.f_draw['text'] = entry['serial']
@@ -954,7 +962,7 @@ class SquashInterface:
         self.e_token.insert(0, entry['files'].split(', ')[-1])
 
         self.s_calib.set(' G/P: {}'.format(entry['status'][0]))
-        self.s_token.set(' TP: {}'.format(entry['status'][1]))
+        self.s_token.set(' TP: {}'.format(entry['status'][-1]))
 
         self.place_record_group()
 
@@ -999,27 +1007,32 @@ class SquashInterface:
             self.set_notify_warning('{} already exists'.format(qrcode))
             return
 
-        pedes = np.zeros((64, 2))
-        gains = np.zeros((64, 2))
-        files = [''] * 5
+        if self.version == 'adc':
+            files = [''] * 5
+        else:
+            files = ['']
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
         if comment:
             comment = '{} [{}] <{}>'.format(comment, timestamp, self.user)
 
+        status = '??' if self.version == 'adc' else '?'
+
         entry = {
             'serial': serial,
             'id': qrcode,
-            'pedes': np.array_repr(pedes),
-            'gains': np.array_repr(gains),
             'location': '{} [{}] <{}>'.format(location, timestamp, self.user),
             'history': 'INSERT: [{}] <{}>'.format(timestamp, self.user),
             'comment': comment,
-            'status': '??',
+            'status': status,
             'files': ', '.join(files),
             'install': install,
         }
+
+        if self.version == 'adc':
+            entry['pedes'] = np.array_repr(np.zeros((64, 2)))
+            entry['gains'] = np.array_repr(np.zeros((64, 2)))
 
         self.squash.insert(entry.keys(), entry.values())
 
@@ -1144,14 +1157,16 @@ class SquashInterface:
 
             entry = self.squash.label(data)
 
+            s_str = 'G/P: {} | TP: {}' if self.version == 'adc' else 'TP: {}'
+
             location = entry['location'].split(', ')
             history = entry['history'].split(', ')
             comment = entry['comment'].split('; ')
-            status = 'G/P: {} | TP: {}'.format(*entry['status'])
+            status = s_str.format(*entry['status'])
             files = [x if x else '-' for x in entry['files'].split(', ')]
 
             i_tag = 'info' if entry['id'] else 'warn'
-            s_tag = 'pass' if entry['status'] == 'PP' else 'warn'
+            s_tag = 'pass' if all(x == 'P' for x in entry['status']) else 'warn'
 
             f_bool = list(map(lambda x: int(x != '-'), files))
             f_info = 'files | {}/4 | {}/1'.format(sum(f_bool[:4]), f_bool[-1])
