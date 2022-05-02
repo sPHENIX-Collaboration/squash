@@ -37,6 +37,7 @@ class SquashInterface:
     def __init__(self, master):
         self.master = master
         self.squash = None
+        self.version = None
 
         self.mode = SIModes.NONE
         self.state = SIStates.NONE
@@ -62,7 +63,7 @@ class SquashInterface:
 
     def init_root(self):
         self.master.geometry('800x600')
-        self.master.title('pumpkin.py []')
+        self.master.title('pumpkin.py')
         self.master.iconphoto(False, ImageTk.PhotoImage(Image.open('icon.png')))
 
         for name in tkinter.font.names(self.master):
@@ -968,25 +969,21 @@ class SquashInterface:
             raise FileNotFoundError
 
         self.squash = SquashHelper(text)
+        self.version = self.squash.version
 
-        self.master.title('pumpkin.py [{}]'.format(os.path.basename(text)))
+        self.master.title('[{}] pumpkin.py [{}]'.format(
+            self.version, os.path.basename(text))
+        )
 
     def close_database_file(self):
         self.squash.close()
         self.squash = None
+        self.version = None
 
         self.user = None
         self.dir = None
 
-        self.master.title('pumpkin.py []')
-
-    @Decorators.show_progress
-    def create_database_file(self, text):
-        if os.path.isfile(text) is True:
-            raise FileExistsError
-
-        self.squash = SquashHelper(text)
-        self.squash.create()
+        self.master.title('pumpkin.py')
 
     @Decorators.show_progress
     def insert_database_entry(self, data):
