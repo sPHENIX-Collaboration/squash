@@ -758,8 +758,10 @@ class SquashInterface:
         idir = os.getcwd() if self.dir is None else self.dir
         path = filedialog.askopenfilename(initialdir=idir)
 
+        relpath = os.path.relpath(path, os.path.dirname(self.squash.path))
+
         self.e_token.delete(0, tk.END)
-        self.e_token.insert(0, path)
+        self.e_token.insert(0, relpath)
 
         self.dir = os.path.dirname(path)
 
