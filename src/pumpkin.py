@@ -793,9 +793,10 @@ class SquashInterface:
         det = self.e_det.get().strip()
         comment = self.e_comment.get().strip()
 
-        self.insert_database_entry([
-            serial, qrcode, location, rack, crate, slot, det, comment
-        ])
+        if self.insert_database_entry(
+            [serial, qrcode, location, rack, crate, slot, det, comment]
+        ) is False:
+            return
 
         self.set_notify_info('{} registered'.format(serial))
 
@@ -814,9 +815,10 @@ class SquashInterface:
             self.s_calib.get()[-1] if self.version == 'adc' else ''
         ) + self.s_token.get()[-1]
 
-        self.modify_database_entry([
-            qrcode, location, rack, crate, slot, det, comment, token, status
-        ])
+        if self.modify_database_entry(
+            [qrcode, location, rack, crate, slot, det, comment, token, status]
+        ) is False:
+            return
 
         query = self.query
 
@@ -1078,19 +1080,19 @@ class SquashInterface:
         query = 'WHERE serial = {}'.format(repr(serial))
         if len(self.squash.select(query)) > 0:
             self.set_notify_warning('{} already exists'.format(serial))
-            return
+            return False
 
         query = 'WHERE id = {}'.format(repr(qrcode))
         if qrcode != '' and len(self.squash.select(query)) > 0:
             self.set_notify_warning('{} already exists'.format(qrcode))
-            return
+            return False
 
         if location == 'BNL (sPHENIX)' and (not rack or
                                             not crate or
                                             not slot or
                                             not det):
             self.set_notify_warning('invalid rack/crate/slot/detector')
-            return
+            return False
 
         if self.version == 'adc':
             files = [''] * 5
@@ -1301,7 +1303,7 @@ class SquashInterface:
                                             not slot or
                                             not det):
             self.set_notify_warning('invalid rack/crate/slot/detector')
-            return
+            return False
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
