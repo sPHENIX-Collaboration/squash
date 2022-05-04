@@ -1254,6 +1254,8 @@ class SquashInterface:
         self.query = text
         self.index = None
 
+        p = re.compile('(.*) \[.*\] <.*>')
+
         for i, data in enumerate(self.results):
             e_id = str(i)
 
@@ -1280,7 +1282,7 @@ class SquashInterface:
 
             self._insert(e_id, 'QR code', i_tag, entry['id'])
             self._insert(e_id, 'location', 'info', location[::-1])
-            if location == 'BNL (sPHENIX)':
+            if p.match(location[-1]).group(1) == 'BNL (sPHENIX)':
                 rcs = entry['detector'] + ': ' + ', '.join([
                     '{} {}'.format(x.upper(), entry[x])
                     for x in ('rack', 'crate', 'slot')
