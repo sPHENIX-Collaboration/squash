@@ -1150,6 +1150,15 @@ class SquashInterface:
     def select_database_entry(self, text):
         self.t_info.delete(*self.t_info.get_children())
 
+        if not text:
+            pass
+        elif re.match('^E[0-9]{6}$', text):
+            text = 'WHERE serial = {}'.format(repr(text))
+        elif re.match('^[0-9]{1,3}$', text):
+            text = 'WHERE id = {}'.format(repr(text))
+        elif not text.upper().startswith('WHERE '):
+            text = 'WHERE {}'.format(text)
+
         self.results = self.squash.select(text)
         self.query = text
         self.index = None
