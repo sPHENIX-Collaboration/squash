@@ -1174,7 +1174,9 @@ class SquashInterface:
             f_info = 'files | {}/4 | {}/1'.format(sum(f_bool[:4]), f_bool[-1])
             f_tag = 'info' if sum(f_bool) == 5 else 'warn'
 
-            self.t_info.insert('', tk.END, e_id, text=entry['serial'])
+            e_tag = '' if all(x == '?' for x in entry['status']) else s_tag
+
+            self.t_info.insert('', tk.END, e_id, tags=e_tag, text=entry['serial'])
 
             self._insert(e_id, 'board ID', i_tag, entry['id'])
             self._insert(e_id, 'location', 'info', location[::-1])
