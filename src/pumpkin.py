@@ -102,10 +102,10 @@ class SquashInterface:
 
         self.f_box = ttk.Frame(self.c_view)
 
-        self.f_box.columnconfigure(3, weight=1)
-        self.f_box.columnconfigure(5, weight=1)
-        self.f_box.rowconfigure(6, weight=1)
-        self.f_box.rowconfigure(16, weight=1)
+        self.f_box.columnconfigure(6, weight=1)
+        self.f_box.columnconfigure(8, weight=1)
+        self.f_box.rowconfigure(7, weight=1)
+        self.f_box.rowconfigure(17, weight=1)
 
         self.p_bar = ttk.Progressbar(
             self.frame,
@@ -145,12 +145,12 @@ class SquashInterface:
         self.b_cont['command'] = self.on_click_continue
 
         self.l_serial = ttk.Label(self.f_box, text='serial #:', anchor='e', width=8)
-        self.e_serial = ttk.Entry(self.f_box, width=12)
+        self.e_serial = ttk.Entry(self.f_box, width=16)
         self.l_qrcode = ttk.Label(self.f_box, text='QR code:', anchor='e', width=8)
-        self.e_qrcode = ttk.Entry(self.f_box, width=12)
+        self.e_qrcode = ttk.Entry(self.f_box, width=16)
 
         self.l_location = ttk.Label(self.f_box, text='location:', anchor='e', width=8)
-        self.e_location = ttk.Combobox(self.f_box, state=['readonly'], width=12)
+        self.e_location = ttk.Combobox(self.f_box, state=['readonly'], width=16)
         self.e_location['values'] = (
             '  UC Boulder',
             '  Nevis Labs (Columbia)',
@@ -161,7 +161,16 @@ class SquashInterface:
         self.e_location.bind('<<ComboboxSelected>>', self.on_select_location)
 
         self.l_install = ttk.Label(self.f_box, text='install:', anchor='e', width=8)
-        self.e_install = ttk.Entry(self.f_box, width=12)
+        self.l_rack = ttk.Label(self.f_box, text='rack', anchor='center', width=4)
+        self.e_rack = ttk.Entry(self.f_box, width=4)
+        self.l_crate = ttk.Label(self.f_box, text='crate', anchor='center', width=4)
+        self.e_crate = ttk.Entry(self.f_box, width=4)
+        self.l_slot = ttk.Label(self.f_box, text='slot', anchor='center', width=4)
+        self.e_slot = ttk.Entry(self.f_box, width=4)
+        self.l_det = ttk.Label(self.f_box, text='detector', anchor='center', width=8)
+        self.e_det = ttk.Combobox(self.f_box, state=['readonly'], width=8)
+        self.e_det['values'] = ('', 'MBD', 'ECAL', 'HCAL', 'sEPD')
+        self.e_det.set('')
 
         self.l_comment = ttk.Label(self.f_box, text='comment:', anchor='e', width=8)
         self.e_comment = ttk.Entry(self.f_box, width=12)
@@ -302,11 +311,11 @@ class SquashInterface:
         self.c_view.yview_moveto(0)
 
     def place_canvas(self):
-        self.canvas.get_tk_widget().grid(column=4, row=7, sticky='nswe')
+        self.canvas.get_tk_widget().grid(column=7, row=7, sticky='nswe')
 
         if self.state is SIStates.SELECT:
             self.b_save['state'] = 'normal'
-            self.b_back.grid(column=4, row=8, padx=4, pady=4)
+            self.b_back.grid(column=7, row=8, padx=4, pady=4)
 
     def clear_canvas(self):
         self.canvas.get_tk_widget().grid_forget()
@@ -358,37 +367,54 @@ class SquashInterface:
         self.b_action.grid_forget()
 
     def place_install_group(self):
-        row = 3 if self.state is SIStates.INSERT else 20
+        row = 3 if self.state is SIStates.INSERT else 21
 
-        self.l_install.grid(column=0, row=row, padx=2, pady=1, sticky='we')
-        self.e_install.grid(column=1, row=row, padx=2, pady=1, sticky='we')
+        self.l_install.grid(column=0, row=row, rowspan=2, padx=2, pady=1, sticky='we')
+        self.l_rack.grid(column=1, row=row, padx=2, pady=1, sticky='we')
+        self.e_rack.grid(column=1, row=row + 1, padx=2, pady=1, sticky='we')
+        self.l_crate.grid(column=2, row=row, padx=2, pady=1, sticky='we')
+        self.e_crate.grid(column=2, row=row + 1, padx=2, pady=1, sticky='we')
+        self.l_slot.grid(column=3, row=row, padx=2, pady=1, sticky='we')
+        self.e_slot.grid(column=3, row=row + 1, padx=2, pady=1, sticky='we')
+        self.l_det.grid(column=4, row=row, padx=2, pady=1, sticky='we')
+        self.e_det.grid(column=4, row=row + 1, padx=2, pady=1, sticky='we')
 
     def clear_install_group(self):
         self.l_install.grid_forget()
-        self.e_install.delete(0, tk.END)
-        self.e_install.grid_forget()
+        self.l_rack.grid_forget()
+        self.e_rack.delete(0, tk.END)
+        self.e_rack.grid_forget()
+        self.l_crate.grid_forget()
+        self.e_crate.delete(0, tk.END)
+        self.e_crate.grid_forget()
+        self.l_slot.grid_forget()
+        self.e_slot.delete(0, tk.END)
+        self.e_slot.grid_forget()
+        self.l_det.grid_forget()
+        self.e_det.delete(0, tk.END)
+        self.e_det.grid_forget()
 
     def place_record_group(self):
-        self.l_serial.grid(column=0, row=17, padx=2, pady=1, sticky='we')
-        self.e_serial.grid(column=1, row=17, padx=2, pady=1, sticky='we')
-        self.l_qrcode.grid(column=0, row=18, padx=2, pady=1, sticky='we')
-        self.e_qrcode.grid(column=1, row=18, padx=2, pady=1, sticky='we')
-        self.l_location.grid(column=0, row=19, padx=2, pady=1, sticky='we')
-        self.e_location.grid(column=1, row=19, padx=2, pady=1, sticky='we')
-        self.l_comment.grid(column=0, row=21, padx=2, pady=1, sticky='we')
-        self.e_comment.grid(column=1, row=21, padx=2, pady=1, sticky='we')
-        self.l_token.grid(column=0, row=22, padx=2, pady=1, sticky='we')
-        self.e_token.grid(column=1, row=22, padx=2, pady=1, sticky='we')
-        self.b_token.grid(column=2, row=22, padx=2, pady=1, sticky='we')
-        self.l_status.grid(column=0, row=23, rowspan=2, padx=2, sticky='we')
+        self.l_serial.grid(column=0, row=18, padx=2, pady=1, sticky='we')
+        self.e_serial.grid(column=1, row=18, columnspan=3, padx=2, pady=1, sticky='we')
+        self.l_qrcode.grid(column=0, row=19, padx=2, pady=1, sticky='we')
+        self.e_qrcode.grid(column=1, row=19, columnspan=3, padx=2, pady=1, sticky='we')
+        self.l_location.grid(column=0, row=20, padx=2, pady=1, sticky='we')
+        self.e_location.grid(column=1, row=20, columnspan=3, padx=2, pady=1, sticky='we')
+        self.l_comment.grid(column=0, row=23, padx=2, pady=1, sticky='we')
+        self.e_comment.grid(column=1, row=23, columnspan=4, padx=2, pady=1, sticky='we')
+        self.l_token.grid(column=0, row=24, padx=2, pady=1, sticky='we')
+        self.e_token.grid(column=1, row=24, columnspan=4, padx=2, pady=1, sticky='we')
+        self.b_token.grid(column=5, row=24, padx=2, pady=1, sticky='we')
+        self.l_status.grid(column=0, row=25, rowspan=2, padx=2, sticky='we')
 
         if self.version == 'adc':
-            self.s_calib.grid(column=1, row=23, padx=2, sticky='w')
-        self.s_token.grid(column=1, row=24, padx=2, sticky='w')
+            self.s_calib.grid(column=1, row=25, columnspan=3, padx=2, sticky='w')
+        self.s_token.grid(column=1, row=26, columnspan=3, padx=2, sticky='w')
 
         self.b_record['text'] = 'edit'
         self.b_record['command'] = self.on_click_edit
-        self.b_record.grid(column=0, row=25, columnspan=2, rowspan=1, pady=4)
+        self.b_record.grid(column=0, row=27, columnspan=4, rowspan=1, pady=4)
 
     def clear_record_group(self):
         self.e_serial.configure(state='normal')
@@ -403,8 +429,18 @@ class SquashInterface:
         self.e_location.delete(0, tk.END)
         self.e_location.grid_forget()
         self.l_install.grid_forget()
-        self.e_install.delete(0, tk.END)
-        self.e_install.grid_forget()
+        self.l_rack.grid_forget()
+        self.e_rack.delete(0, tk.END)
+        self.e_rack.grid_forget()
+        self.l_crate.grid_forget()
+        self.e_crate.delete(0, tk.END)
+        self.e_crate.grid_forget()
+        self.l_slot.grid_forget()
+        self.e_slot.delete(0, tk.END)
+        self.e_slot.grid_forget()
+        self.l_det.grid_forget()
+        self.e_det.delete(0, tk.END)
+        self.e_det.grid_forget()
         self.l_comment.grid_forget()
         self.e_comment.delete(0, tk.END)
         self.e_comment.grid_forget()
@@ -539,17 +575,17 @@ class SquashInterface:
 
         if state is SIStates.INSERT:
             self.l_serial.grid(column=0, row=0, padx=2, pady=1, sticky='we')
-            self.e_serial.grid(column=1, row=0, padx=2, pady=1, sticky='we')
+            self.e_serial.grid(column=1, row=0, columnspan=3, padx=2, pady=1, sticky='we')
             self.l_qrcode.grid(column=0, row=1, padx=2, pady=1, sticky='we')
-            self.e_qrcode.grid(column=1, row=1, padx=2, pady=1, sticky='we')
+            self.e_qrcode.grid(column=1, row=1, columnspan=3, padx=2, pady=1, sticky='we')
             self.l_location.grid(column=0, row=2, padx=2, pady=1, sticky='we')
-            self.e_location.grid(column=1, row=2, padx=2, pady=1, sticky='we')
-            self.l_comment.grid(column=0, row=4, padx=2,pady=1, sticky='we')
-            self.e_comment.grid(column=1, row=4, padx=2,pady=1, sticky='we')
+            self.e_location.grid(column=1, row=2, columnspan=3, padx=2, pady=1, sticky='we')
+            self.l_comment.grid(column=0, row=5, padx=2,pady=1, sticky='we')
+            self.e_comment.grid(column=1, row=5, columnspan=4, padx=2,pady=1, sticky='we')
 
             self.b_record['text'] = 'register'
             self.b_record['command'] = self.on_click_register
-            self.b_record.grid(column=0, row=5, columnspan=2, rowspan=1, pady=4)
+            self.b_record.grid(column=0, row=6, columnspan=4, rowspan=1, pady=4)
 
             self.e_serial.focus_set()
 
@@ -575,9 +611,9 @@ class SquashInterface:
 
             self.t_info.grid(
                 column=0,
-                row=6,
-                columnspan=6,
-                rowspan=11,
+                row=7,
+                columnspan=9,
+                rowspan=12,
                 padx=4,
                 pady=4,
                 sticky='nswe',
@@ -751,11 +787,14 @@ class SquashInterface:
         serial = self.e_serial.get().strip()
         qrcode = self.e_qrcode.get().strip()
         location = self.e_location.get().strip()
-        install = self.e_install.get().strip()
+        rack = self.e_rack.get().strip()
+        crate = self.e_crate.get().strip()
+        slot = self.e_slot.get().strip()
+        det = self.e_det.get().strip()
         comment = self.e_comment.get().strip()
 
         self.insert_database_entry([
-            serial, qrcode, location, install, comment
+            serial, qrcode, location, rack, crate, slot, det, comment
         ])
 
         self.set_notify_info('{} registered'.format(serial))
@@ -765,7 +804,10 @@ class SquashInterface:
         serial = self.e_serial.get().strip()
         qrcode = self.e_qrcode.get().strip()
         location = self.e_location.get().strip()
-        install = self.e_install.get().strip()
+        rack = self.e_rack.get().strip()
+        crate = self.e_crate.get().strip()
+        slot = self.e_slot.get().strip()
+        det = self.e_det.get().strip()
         comment = self.e_comment.get().strip()
         token = self.e_token.get().strip()
         status = (
@@ -773,7 +815,7 @@ class SquashInterface:
         ) + self.s_token.get()[-1]
 
         self.modify_database_entry([
-            qrcode, location, install, comment, token, status
+            qrcode, location, rack, crate, slot, det, comment, token, status
         ])
 
         query = self.query
@@ -986,8 +1028,13 @@ class SquashInterface:
         location = p.match(entry['location'].split(', ')[-1]).group(1)
         self.e_location.set('  {}'.format(location))
 
-        self.e_install.delete(0, tk.END)
-        self.e_install.insert(0, entry['install'].strip())
+        self.e_rack.delete(0, tk.END)
+        self.e_rack.insert(0, entry['rack'].strip())
+        self.e_crate.delete(0, tk.END)
+        self.e_crate.insert(0, entry['crate'].strip())
+        self.e_slot.delete(0, tk.END)
+        self.e_slot.insert(0, entry['slot'].strip())
+        self.e_det.set(entry['detector'])
 
         self.e_token.delete(0, tk.END)
         self.e_token.insert(0, entry['files'].split(', ')[-1])
@@ -1026,7 +1073,7 @@ class SquashInterface:
 
     @Decorators.show_progress
     def insert_database_entry(self, data):
-        serial, qrcode, location, install, comment = data
+        serial, qrcode, location, rack, crate, slot, det, comment = data
 
         query = 'WHERE serial = {}'.format(repr(serial))
         if len(self.squash.select(query)) > 0:
@@ -1036,6 +1083,13 @@ class SquashInterface:
         query = 'WHERE id = {}'.format(repr(qrcode))
         if qrcode != '' and len(self.squash.select(query)) > 0:
             self.set_notify_warning('{} already exists'.format(qrcode))
+            return
+
+        if location == 'BNL (sPHENIX)' and (not rack or
+                                            not crate or
+                                            not slot or
+                                            not det):
+            self.set_notify_warning('invalid rack/crate/slot/detector')
             return
 
         if self.version == 'adc':
@@ -1058,7 +1112,10 @@ class SquashInterface:
             'comment': comment,
             'status': status,
             'files': ', '.join(files),
-            'install': install,
+            'rack': rack,
+            'crate': crate,
+            'slot': slot,
+            'detector': det,
         }
 
         if self.version == 'adc':
@@ -1106,7 +1163,10 @@ class SquashInterface:
         entry['location'] = data['location']
         entry['history'] = ', '.join([data['history'], history])
         entry['status'] = data['status']
-        entry['install'] = data['install']
+        entry['rack'] = data['rack']
+        entry['crate'] = data['crate']
+        entry['slot'] = data['slot']
+        entry['detector'] = data['detector']
 
         if entry['comment']:
             comments = [x for x in data['comment'].split('; ') if x]
@@ -1219,7 +1279,11 @@ class SquashInterface:
             self._insert(e_id, 'QR code', i_tag, entry['id'])
             self._insert(e_id, 'location', 'info', location[::-1])
             if location == 'BNL (sPHENIX)':
-                self._insert(e_id, 'install', 'info', entry['install'])
+                rcs = entry['detector'] + ': ' + ', '.join([
+                    '{} {}'.format(x.upper(), entry[x])
+                    for x in ('rack', 'crate', 'slot')
+                ])
+                self._insert(e_id, 'D: R/C/S', 'info', rcs)
             self._insert(e_id, 'history', 'info', history[::-1])
             self._insert(e_id, 'comment', 'info', comment[::-1])
             self._insert(e_id, 'status', s_tag, status)
@@ -1230,7 +1294,14 @@ class SquashInterface:
 
     @Decorators.show_progress
     def modify_database_entry(self, data):
-        qrcode, location, install, comment, token, status = data
+        qrcode, location, rack, crate, slot, det, comment, token, status = data
+
+        if location == 'BNL (sPHENIX)' and (not rack or
+                                            not crate or
+                                            not slot or
+                                            not det):
+            self.set_notify_warning('invalid rack/crate/slot/detector')
+            return
 
         timestamp = datetime.now().strftime('%y%m%d-%H:%M:%S')
 
@@ -1275,7 +1346,10 @@ class SquashInterface:
             entry['files'] = ', '.join(files)
 
         entry['status'] = status
-        entry['install'] = install
+        entry['rack'] = rack
+        entry['crate'] = crate
+        entry['slot'] = slot
+        entry['detector'] = det
 
         condition = 'WHERE serial = {}'.format(repr(entry['serial']))
 

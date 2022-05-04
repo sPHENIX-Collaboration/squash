@@ -87,7 +87,10 @@ class DataFormat_v1(DataFormat):
         'comment': 'TEXT',
         'status': 'TEXT',
         'files': 'TEXT',
-        'install': 'TEXT',
+        'rack': 'TEXT',
+        'crate': 'TEXT',
+        'slot': 'TEXT',
+        'detector': 'TEXT',
     }
 
     def parser(self, raw, callback=None):
@@ -272,7 +275,10 @@ class DataFormat_v1(DataFormat):
             i_min, i_max - 1, timestamp)
         entry['comment'] = '; '.join(errors)
         entry['status'] = '??'
-        entry['install'] = ''
+        entry['rack'] = ''
+        entry['crate'] = ''
+        entry['slot'] = ''
+        entry['detector'] = ''
 
         return entry, mean, sigma, y, pars, errs
 
@@ -286,7 +292,10 @@ class DataFormat_v2(DataFormat):
         'comment': 'TEXT',
         'status': 'TEXT',
         'files': 'TEXT',
-        'install': 'TEXT',
+        'rack': 'TEXT',
+        'crate': 'TEXT',
+        'slot': 'TEXT',
+        'detector': 'TEXT',
     }
 
     def parser(self, raw):
