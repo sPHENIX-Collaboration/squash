@@ -146,7 +146,7 @@ class SquashInterface:
 
         self.l_serial = ttk.Label(self.f_box, text='serial #:', anchor='e', width=8)
         self.e_serial = ttk.Entry(self.f_box, width=12)
-        self.l_qrcode = ttk.Label(self.f_box, text='board ID:', anchor='e', width=8)
+        self.l_qrcode = ttk.Label(self.f_box, text='QR code:', anchor='e', width=8)
         self.e_qrcode = ttk.Entry(self.f_box, width=12)
 
         self.l_location = ttk.Label(self.f_box, text='location:', anchor='e', width=8)
@@ -1216,7 +1216,7 @@ class SquashInterface:
 
             self.t_info.insert('', tk.END, e_id, tags=e_tag, text=entry['serial'])
 
-            self._insert(e_id, 'board ID', i_tag, entry['id'])
+            self._insert(e_id, 'QR code', i_tag, entry['id'])
             self._insert(e_id, 'location', 'info', location[::-1])
             if location == 'BNL (sPHENIX)':
                 self._insert(e_id, 'install', 'info', entry['install'])
