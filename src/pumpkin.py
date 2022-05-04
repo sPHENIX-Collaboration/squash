@@ -19,6 +19,10 @@ from helper import SquashHelper
 from utils import slice_from_string
 
 
+ADC_DB_PATH = ''
+XMIT_DB_PATH = ''
+
+
 class SIModes(Enum):
     NONE = 0
     OPEN = 1
@@ -121,6 +125,11 @@ class SquashInterface:
         self.e_text.bind('<Key-Return>', self.on_carriage_return)
 
         self.b_power = ttk.Button(self.frame, text='power', width=6)
+
+        self.b_adc = ttk.Button(self.frame, text='adc', width=6)
+        self.b_adc['command'] = self.on_click_adc
+        self.b_xmit = ttk.Button(self.frame, text='xmit', width=6)
+        self.b_xmit['command'] = self.on_click_xmit
 
         self.b_insert = ttk.Button(self.frame, text='insert', width=6)
         self.b_insert['command'] = self.on_click_insert
@@ -454,6 +463,9 @@ class SquashInterface:
         if mode is SIModes.LOGIN:
             self.clear_action_group()
 
+            self.b_adc.grid_forget()
+            self.b_xmit.grid_forget()
+
         if mode is SIModes.ACTIVE:
             self.l_user.grid_forget()
             self.e_user.delete(0, tk.END)
@@ -501,6 +513,9 @@ class SquashInterface:
             self.b_action['text'] = 'browse'
             self.b_action['command'] = self.on_click_browse
             self.b_action.grid(column=6, row=0, padx=4)
+
+            self.b_adc.grid(column=0, row=2, padx=8, sticky='we')
+            self.b_xmit.grid(column=0, row=3, padx=8, sticky='we')
 
             self.e_text.focus_set()
 
@@ -702,6 +717,20 @@ class SquashInterface:
             self.dir = os.path.dirname(paths[0])
         else:
             self.dir = os.path.dirname(path)
+
+        self.on_carriage_return()
+
+    @Decorators.reset_warnings
+    def on_click_adc(self):
+        self.e_text.delete(0, tk.END)
+        self.e_text.insert(0, ADC_DB_PATH)
+
+        self.on_carriage_return()
+
+    @Decorators.reset_warnings
+    def on_click_xmit(self):
+        self.e_text.delete(0, tk.END)
+        self.e_text.insert(0, XMIT_DB_PATH)
 
         self.on_carriage_return()
 
