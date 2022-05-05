@@ -311,7 +311,7 @@ class SquashInterface:
         self.c_view.yview_moveto(0)
 
     def place_canvas(self):
-        self.canvas.get_tk_widget().grid(column=7, row=7, sticky='nswe')
+        self.canvas.get_tk_widget().grid(column=7, row=8, sticky='nswe')
 
         if self.state is SIStates.SELECT:
             self.b_save['state'] = 'normal'
