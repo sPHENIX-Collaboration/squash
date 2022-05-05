@@ -271,11 +271,11 @@ class SquashInterface:
         )
 
         def _fill_canvas(event):
-            if event.width > self.f_box.winfo_width():
-                self.c_view.itemconfig(self.w_view, width=event.width)
+            if self.fig is not None:
+                return
 
-            if event.height > self.f_box.winfo_height():
-                self.c_view.itemconfig(self.w_view, height=event.height)
+            self.c_view.itemconfig(self.w_view, width=event.width)
+            self.c_view.itemconfig(self.w_view, height=event.height)
 
         self.c_view.bind('<Configure>', _fill_canvas)
 
@@ -1047,6 +1047,8 @@ class SquashInterface:
         self.place_record_group()
 
         self.e_location.event_generate('<<ComboboxSelected>>')
+
+        self.update_bounds()
 
     def set_progress(self, i):
         self.p_bar['value'] = i
