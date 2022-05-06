@@ -315,7 +315,7 @@ class SquashInterface:
 
         if self.state is SIStates.SELECT:
             self.b_save['state'] = 'normal'
-            self.b_back.grid(column=7, row=8, padx=4, pady=4)
+            self.b_back.grid(column=7, row=9, padx=4, pady=4)
 
     def clear_canvas(self):
         self.canvas.get_tk_widget().grid_forget()
