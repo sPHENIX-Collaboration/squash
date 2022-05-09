@@ -19,8 +19,8 @@ from helper import SquashHelper
 from utils import slice_from_string
 
 
-ADC_DB_PATH = '/gpfs02/sphenix/user/cmcginn/sPHENIXBoards/squash/src/ADC_boards.db'
-XMIT_DB_PATH = '/gpfs02/sphenix/user/cmcginn/sPHENIXBoards/squash/src/XMIT_boards.db'
+ADC_DB_PATH = '/gpfs/mnt/gpfs02/sphenix/user/cmcginn/sPHENIXBoards/squash/src/ADC_boards.db'
+XMIT_DB_PATH = '/gpfs/mnt/gpfs02/sphenix/user/cmcginn/sPHENIXBoards/squash/src/XMIT_boards.db'
 
 
 class SIModes(Enum):
