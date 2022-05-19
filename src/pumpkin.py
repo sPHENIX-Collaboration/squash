@@ -66,6 +66,9 @@ class SquashInterface:
         self.init_display()
 
     def init_root(self):
+        """
+        Initializes the application window.
+        """
         self.master.geometry('800x600')
         self.master.title('pumpkin.py')
         self.master.iconphoto(False, ImageTk.PhotoImage(Image.open('icon.png')))
@@ -75,6 +78,9 @@ class SquashInterface:
             self.fontsizes[str(font)] = font['size']
 
     def init_frames(self):
+        """
+        Initializes the static application frames.
+        """
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
 
@@ -119,6 +125,9 @@ class SquashInterface:
         self.s_zoom.set(1.0)
 
     def init_widgets(self):
+        """
+        Initializes the dynamic application frames and elements.
+        """
         self.b_action = ttk.Button(self.frame, text='action', width=6)
 
         self.e_text = ttk.Entry(self.frame)
@@ -243,6 +252,9 @@ class SquashInterface:
         self.c_view.config(yscrollcommand=self.sb_y.set)
 
     def refresh_display(self):
+        """
+        Refreshes the window.
+        """
         self.main.grid_forget()
 
         self.init_display()
@@ -250,6 +262,8 @@ class SquashInterface:
         self.layout_display(self.mode, self.state)
 
     def init_display(self):
+        """
+        """
         self.main.grid(column=0, row=0, sticky='nswe')
         self.frame.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
 
@@ -291,6 +305,9 @@ class SquashInterface:
         self.layout_display(self.mode, self.state)
 
     def scale_root(self, value):
+        """
+        Scales the window.
+        """
         scale = float(value)
 
         if abs((rel := scale / self.scale) - 1.0) < 0.1:
@@ -365,7 +382,9 @@ class SquashInterface:
         self.e_text.delete(0, tk.END)
         self.e_text.grid_forget()
         self.b_action.grid_forget()
-
+    
+    # Install Group clear and replace functions
+    
     def place_install_group(self):
         row = 3 if self.state is SIStates.INSERT else 21
 
@@ -393,7 +412,9 @@ class SquashInterface:
         self.l_det.grid_forget()
         self.e_det.delete(0, tk.END)
         self.e_det.grid_forget()
-
+    
+    # Record Group clear and replace functions
+    
     def place_record_group(self):
         self.l_serial.grid(column=0, row=18, padx=2, pady=1, sticky='we')
         self.e_serial.grid(column=1, row=18, columnspan=3, padx=2, pady=1, sticky='we')
@@ -453,7 +474,9 @@ class SquashInterface:
         self.s_token.grid_forget()
 
         self.b_record.grid_forget()
-
+    
+    # Draw Group clear and replace functions
+    
     def place_draw_group(self):
         self.f_draw.grid(column=1, row=7, columnspan=6, rowspan=1, sticky='nswe')
         self.n_draw.grid(column=0, row=0, columnspan=1, rowspan=4, sticky='nswe')
@@ -483,7 +506,9 @@ class SquashInterface:
         self.b_draw.grid_forget()
         self.b_save.grid_forget()
         self.b_back.grid_forget()
-
+    
+    # Display clear and replace functions
+    
     def clear_display(self, mode, state):
         self.reset_notification()
 
@@ -636,22 +661,45 @@ class SquashInterface:
 
         if state is not None:
             self.state = state
-
+    
+    # Notification functions
+    
     def reset_notification(self):
+        """
+        Resets the notification at the bottom of the window to an empty string.
+        """
         self.l_bar['text'] = ''
 
     def set_notify_info(self, message):
+        """
+        Changes the notification at the bottom of the window to an info icon
+        followed by the notification message.
+        """
         self.l_bar['text'] = 'ℹ {}'.format(message)
 
     def set_notify_warning(self, message):
+        """
+        Changes the notification at the bottom of the window to a warning icon
+        followed by the notification message.
+        """
         self.l_bar['text'] = '⚠️ {}'.format(message)
 
     def set_notify_error(self, message):
+        """
+        Changes the notification at the bottom of the window to an error icon
+        followed by the notification message.
+        """
         self.l_bar['text'] = '🛑 {}'.format(message)
-
+    
+    # Notification and progress bar decorator functions
+    
     class Decorators:
         @classmethod
         def reset_progress(cls, f):
+            """
+            Resets the progress bar at the bottom of the window before running
+            the associated function.
+            """
             def wrapper(self, *args, **kwargs):
                 self.set_progress(0)
                 f(self, *args, **kwargs)
@@ -660,6 +708,11 @@ class SquashInterface:
 
         @classmethod
         def show_progress(cls, f):
+            """
+            Triggers the display of a progress bar for applicable functions.
+            Resets the progress bar to zero before running the function, and
+            forces it to 100% once the function is complete.
+            """
             def wrapper(self, *args, **kwargs):
                 self.set_progress(0)
                 f(self, *args, **kwargs)
@@ -669,6 +722,10 @@ class SquashInterface:
 
         @classmethod
         def reset_warnings(cls, f):
+            """
+            Resets the notification at the bottom of the window before running
+            the associated function.
+            """
             def wrapper(self, *args, **kwargs):
                 self.reset_notification()
                 f(self, *args, **kwargs)
