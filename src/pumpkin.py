@@ -38,6 +38,10 @@ class SIStates(Enum):
 
 
 class SquashInterface:
+    """
+    GUI class utilizing tkinter. Creates an interface for accessing and
+    editing the sPHENIX Board Database.
+    """
     def __init__(self, master):
         self.master = master
         self.squash = None
@@ -70,7 +74,8 @@ class SquashInterface:
         Initializes the application window.
         """
         self.master.geometry('800x600')
-        self.master.title('pumpkin.py')
+        #self.master.title('pumpkin.py')    # Old interface name
+        self.master.title('sPHENIX Board Database Editor')
         self.master.iconphoto(False, ImageTk.PhotoImage(Image.open('icon.png')))
 
         for name in tkinter.font.names(self.master):
@@ -81,132 +86,147 @@ class SquashInterface:
         """
         Initializes the static application frames.
         """
+        # Initializes the UI master object
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
 
-        self.main = ttk.Frame(self.master)
+        self.frame_master = ttk.Frame(self.master)
 
-        self.main.columnconfigure(0, weight=1)
-        self.main.rowconfigure(0, weight=1)
+        self.frame_master.columnconfigure(0, weight=1)
+        self.frame_master.rowconfigure(0, weight=1)
+        
+        # Initializes the main window
+        self.frame_mainWindow = ttk.Frame(self.frame_master)
 
-        self.frame = ttk.Frame(self.main)
+        self.frame_mainWindow.columnconfigure(1, weight=1)
+        self.frame_mainWindow.columnconfigure(5, weight=1)
+        self.frame_mainWindow.rowconfigure(6, weight=1)
 
-        self.frame.columnconfigure(1, weight=1)
-        self.frame.columnconfigure(5, weight=1)
-        self.frame.rowconfigure(6, weight=1)
+        self.separatorH_main = ttk.Separator(self.frame_mainWindow, orient='horizontal')
+        self.frame_primaryUI = ttk.Frame(self.frame_mainWindow, relief='groove')
 
-        self.h_bar = ttk.Separator(self.frame, orient='horizontal')
-        self.f_view = ttk.Frame(self.frame, relief='groove')
+        self.frame_primaryUI.columnconfigure(0, weight=1)
+        self.frame_primaryUI.rowconfigure(0, weight=1)
 
-        self.f_view.columnconfigure(0, weight=1)
-        self.f_view.rowconfigure(0, weight=1)
+        self.canvas_primaryUI = tk.Canvas(self.frame_primaryUI, highlightthickness=0)
 
-        self.c_view = tk.Canvas(self.f_view, highlightthickness=0)
+        self.canvas_primaryUI.columnconfigure(0, weight=1)
+        self.canvas_primaryUI.rowconfigure(0, weight=1)
 
-        self.c_view.columnconfigure(0, weight=1)
-        self.c_view.rowconfigure(0, weight=1)
+        self.frame_secondaryUI = ttk.Frame(self.canvas_primaryUI)
 
-        self.f_box = ttk.Frame(self.c_view)
-
-        self.f_box.columnconfigure(6, weight=1)
-        self.f_box.columnconfigure(8, weight=1)
-        self.f_box.rowconfigure(7, weight=1)
-        self.f_box.rowconfigure(17, weight=1)
-
-        self.p_bar = ttk.Progressbar(
-            self.frame,
+        self.frame_secondaryUI.columnconfigure(6, weight=1)
+        self.frame_secondaryUI.columnconfigure(8, weight=1)
+        self.frame_secondaryUI.rowconfigure(7, weight=1)
+        self.frame_secondaryUI.rowconfigure(17, weight=1)
+        
+        # Progress Bar
+        self.progressBar_mainView = ttk.Progressbar(
+            self.frame_mainWindow,
             orient='horizontal',
             mode='determinate',
         )
-        self.l_bar = ttk.Label(self.frame)
-
-        self.s_zoom = ttk.Scale(self.frame, orient='horizontal', from_=0.5, to=2.0)
-        self.s_zoom['command'] = self.scale_root
-        self.s_zoom.set(1.0)
+        
+        # Notification Bar
+        self.label_notificationBar = ttk.Label(self.frame_mainWindow)
+        
+        # Window Scale Slider
+        self.scaleSlider_zoom = ttk.Scale(self.frame_mainWindow, orient='horizontal', from_=0.5, to=2.0)
+        self.scaleSlider_zoom['command'] = self.scale_root
+        self.scaleSlider_zoom.set(1.0)
 
     def init_widgets(self):
         """
-        Initializes the dynamic application frames and elements.
+        Initializes the dynamic application frames and elements ("widgets").
         """
-        self.b_action = ttk.Button(self.frame, text='action', width=6)
+        self.button_action = ttk.Button(self.frame_mainWindow, text='action', width=6)
 
-        self.e_text = ttk.Entry(self.frame)
-        self.e_text.bind('<Key-Return>', self.on_carriage_return)
-
-        self.b_power = ttk.Button(self.frame, text='power', width=6)
-
-        self.b_adc = ttk.Button(self.frame, text='adc', width=6)
-        self.b_adc['command'] = self.on_click_adc
-        self.b_xmit = ttk.Button(self.frame, text='xmit', width=6)
-        self.b_xmit['command'] = self.on_click_xmit
-
-        self.b_insert = ttk.Button(self.frame, text='insert', width=6)
-        self.b_insert['command'] = self.on_click_insert
-        self.b_update = ttk.Button(self.frame, text='update', width=6)
-        self.b_update['command'] = self.on_click_update
-        self.b_select = ttk.Button(self.frame, text='select', width=6)
-        self.b_select['command'] = self.on_click_select
-
-        self.l_user = ttk.Label(self.f_box, text='user:', anchor='e', width=6)
-        self.e_user = ttk.Entry(self.f_box, width=12)
-        self.e_user.bind('<Key-Return>', self.on_click_continue)
-        self.b_cont = ttk.Button(self.f_box, text='continue', width=8)
-        self.b_cont['command'] = self.on_click_continue
-
-        self.l_serial = ttk.Label(self.f_box, text='serial #:', anchor='e', width=8)
-        self.e_serial = ttk.Entry(self.f_box, width=16)
-        self.l_qrcode = ttk.Label(self.f_box, text='QR code:', anchor='e', width=8)
-        self.e_qrcode = ttk.Entry(self.f_box, width=16)
-
-        self.l_location = ttk.Label(self.f_box, text='location:', anchor='e', width=8)
-        self.e_location = ttk.Combobox(self.f_box, state=['readonly'], width=16)
-        self.e_location['values'] = (
-            '  UC Boulder',
+        self.entry_text = ttk.Entry(self.frame_mainWindow)
+        self.entry_text.bind('<Key-Return>', self.on_carriage_return)
+        
+        # Primary action button
+        self.button_power = ttk.Button(self.frame_mainWindow, text='power', width=6)
+        
+        # ADC or XMIT database selection
+        self.button_adc = ttk.Button(self.frame_mainWindow, text='adc', width=6)
+        self.button_adc['command'] = self.on_click_adc
+        self.button_xmit = ttk.Button(self.frame_mainWindow, text='xmit', width=6)
+        self.button_xmit['command'] = self.on_click_xmit
+        
+        # Database edit options
+        self.button_insert = ttk.Button(self.frame_mainWindow, text='insert', width=6)
+        self.button_insert['command'] = self.on_click_insert
+        self.button_update = ttk.Button(self.frame_mainWindow, text='update', width=6)
+        self.button_update['command'] = self.on_click_update
+        self.button_select = ttk.Button(self.frame_mainWindow, text='select', width=6)
+        self.button_select['command'] = self.on_click_select
+        
+        # Database access widgets
+        self.label_access_user = ttk.Label(self.frame_secondaryUI, text='user:', anchor='e', width=6)
+        self.entry_access_user = ttk.Entry(self.frame_secondaryUI, width=12)
+        self.entry_access_user.bind('<Key-Return>', self.on_click_continue)
+        self.button_access_continue = ttk.Button(self.frame_secondaryUI, text='continue', width=8)
+        self.button_access_continue['command'] = self.on_click_continue
+        
+        # Board serial number and QR code entry
+        self.label_serialNumber = ttk.Label(self.frame_secondaryUI, text='serial #:', anchor='e', width=8)
+        self.entry_serialNumber = ttk.Entry(self.frame_secondaryUI, width=16)
+        self.label_qrCode = ttk.Label(self.frame_secondaryUI, text='QR code:', anchor='e', width=8)
+        self.entry_qrCode = ttk.Entry(self.frame_secondaryUI, width=16)
+        
+        # Board location selector
+        self.label_boardLocation = ttk.Label(self.frame_secondaryUI, text='location:', anchor='e', width=8)
+        self.combobox_boardLocation = ttk.Combobox(self.frame_secondaryUI, state=['readonly'], width=16)
+        self.combobox_boardLocation['values'] = (
+            '  CU Boulder',
             '  Nevis Labs (Columbia)',
             '  BNL (storage)',
             '  BNL (sPHENIX)',
         )
-        self.e_location.set('  UC Boulder')
-        self.e_location.bind('<<ComboboxSelected>>', self.on_select_location)
+        self.combobox_boardLocation.set('  CU Boulder')
+        self.combobox_boardLocation.bind('<<ComboboxSelected>>', self.on_select_location)
+        
+        # Board installation information entry
+        self.label_installation = ttk.Label(self.frame_secondaryUI, text='install:', anchor='e', width=8)
+        self.label_rack = ttk.Label(self.frame_secondaryUI, text='rack', anchor='center', width=4)
+        self.entry_rack = ttk.Entry(self.frame_secondaryUI, width=4)
+        self.label_crate = ttk.Label(self.frame_secondaryUI, text='crate', anchor='center', width=4)
+        self.entry_crate = ttk.Entry(self.frame_secondaryUI, width=4)
+        self.label_slot = ttk.Label(self.frame_secondaryUI, text='slot', anchor='center', width=4)
+        self.entry_slot = ttk.Entry(self.frame_secondaryUI, width=4)
+        self.label_detector = ttk.Label(self.frame_secondaryUI, text='detector', anchor='center', width=8)
+        self.combobox_detector = ttk.Combobox(self.frame_secondaryUI, state=['readonly'], width=8)
+        self.combobox_detector['values'] = ('', 'MBD', 'ECAL', 'HCAL', 'sEPD')
+        self.combobox_detector.set('')
+        self.label_comment = ttk.Label(self.frame_secondaryUI, text='comment:', anchor='e', width=8)
+        self.entry_comment = ttk.Entry(self.frame_secondaryUI, width=12)
+        
+        # Board calibration and token pass status selector
+        self.label_status = ttk.Label(self.frame_secondaryUI, text='status:', anchor='e', width=8)
+        self.spinbox_calibration = ttk.Spinbox(self.frame_secondaryUI, state=['readonly'], width=12)
+        self.spinbox_calibration['values'] = (' G/P: ?', ' G/P: P', ' G/P: F')
+        self.spinbox_tokenPass = ttk.Spinbox(self.frame_secondaryUI, state=['readonly'], width=12)
+        self.spinbox_tokenPass['values'] = (' TP: ?', ' TP: P', ' TP: F')
 
-        self.l_install = ttk.Label(self.f_box, text='install:', anchor='e', width=8)
-        self.l_rack = ttk.Label(self.f_box, text='rack', anchor='center', width=4)
-        self.e_rack = ttk.Entry(self.f_box, width=4)
-        self.l_crate = ttk.Label(self.f_box, text='crate', anchor='center', width=4)
-        self.e_crate = ttk.Entry(self.f_box, width=4)
-        self.l_slot = ttk.Label(self.f_box, text='slot', anchor='center', width=4)
-        self.e_slot = ttk.Entry(self.f_box, width=4)
-        self.l_det = ttk.Label(self.f_box, text='detector', anchor='center', width=8)
-        self.e_det = ttk.Combobox(self.f_box, state=['readonly'], width=8)
-        self.e_det['values'] = ('', 'MBD', 'ECAL', 'HCAL', 'sEPD')
-        self.e_det.set('')
+        self.button_recordStatus = ttk.Button(self.frame_secondaryUI, text='record status', width=8)
+        
+        # Token pass data entry
+        self.label_tokenPass = ttk.Label(self.frame_secondaryUI, text='tp data:', anchor='e', width=8)
+        self.entry_tokenPass = ttk.Entry(self.frame_secondaryUI, width=12)
+        self.button_tokenPass = ttk.Button(self.frame_secondaryUI, text='...', width=1)
+        self.button_tokenPass['command'] = self.on_click_token
+        
+        # Board info treeview display
+        self.treeview_boardInfo = ttk.Treeview(self.frame_secondaryUI, selectmode='browse')
+        self.treeview_boardInfo.bind('<<TreeviewSelect>>', self.on_select_entry)
+        self.treeview_boardInfo['columns'] = ['info']
+        self.treeview_boardInfo.heading('info', text='...')
+        self.treeview_boardInfo.tag_configure('edit', foreground='red')
+        self.treeview_boardInfo.tag_configure('pass', background='#abe9b3')
+        self.treeview_boardInfo.tag_configure('warn', background='#f8bd96')
+        self.treeview_boardInfo.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
 
-        self.l_comment = ttk.Label(self.f_box, text='comment:', anchor='e', width=8)
-        self.e_comment = ttk.Entry(self.f_box, width=12)
-
-        self.l_status = ttk.Label(self.f_box, text='status:', anchor='e', width=8)
-        self.s_calib = ttk.Spinbox(self.f_box, state=['readonly'], width=12)
-        self.s_calib['values'] = (' G/P: ?', ' G/P: P', ' G/P: F')
-        self.s_token = ttk.Spinbox(self.f_box, state=['readonly'], width=12)
-        self.s_token['values'] = (' TP: ?', ' TP: P', ' TP: F')
-
-        self.b_record = ttk.Button(self.f_box, text='record', width=8)
-
-        self.l_token = ttk.Label(self.f_box, text='tp data:', anchor='e', width=8)
-        self.e_token = ttk.Entry(self.f_box, width=12)
-        self.b_token = ttk.Button(self.f_box, text='...', width=1)
-        self.b_token['command'] = self.on_click_token
-
-        self.t_info = ttk.Treeview(self.f_box, selectmode='browse')
-        self.t_info.bind('<<TreeviewSelect>>', self.on_select_entry)
-        self.t_info['columns'] = ['info']
-        self.t_info.heading('info', text='...')
-        self.t_info.tag_configure('edit', foreground='red')
-        self.t_info.tag_configure('pass', background='#abe9b3')
-        self.t_info.tag_configure('warn', background='#f8bd96')
-        self.t_info.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
-
-        self.f_draw = ttk.Labelframe(self.frame)
+        self.f_draw = ttk.Labelframe(self.frame_mainWindow)
 
         self.f_draw.columnconfigure(2, weight=1)
         self.f_draw.rowconfigure(0, weight=1)
@@ -231,7 +251,7 @@ class SquashInterface:
         self.b_save['command'] = self.on_click_save
         self.b_save['state'] = 'disabled'
 
-        self.b_back = ttk.Button(self.f_box, text='back', width=6)
+        self.b_back = ttk.Button(self.frame_secondaryUI, text='back', width=6)
         self.b_back['command'] = self.on_click_back
 
         self.l_summary = ttk.Label(self.f_summary, text='channel', anchor='e')
@@ -241,21 +261,21 @@ class SquashInterface:
         self.l_pulse = ttk.Label(self.f_channel, text='pulse', anchor='e')
         self.e_pulse = ttk.Entry(self.f_channel, width=9)
 
-        self.sb_x = ttk.Scrollbar(self.f_view, orient='horizontal')
-        self.sb_x.config(command=self.c_view.xview)
-        self.sb_y = ttk.Scrollbar(self.f_view, orient='vertical')
-        self.sb_y.config(command=self.c_view.yview)
-        self.sb_r = ttk.Label(self.f_view, text='⟳')
+        self.sb_x = ttk.Scrollbar(self.frame_primaryUI, orient='horizontal')
+        self.sb_x.config(command=self.canvas_primaryUI.xview)
+        self.sb_y = ttk.Scrollbar(self.frame_primaryUI, orient='vertical')
+        self.sb_y.config(command=self.canvas_primaryUI.yview)
+        self.sb_r = ttk.Label(self.frame_primaryUI, text='⟳')
         self.sb_r.bind('<ButtonRelease-1>', self.refresh_figure)
 
-        self.c_view.config(xscrollcommand=self.sb_x.set)
-        self.c_view.config(yscrollcommand=self.sb_y.set)
+        self.canvas_primaryUI.config(xscrollcommand=self.sb_x.set)
+        self.canvas_primaryUI.config(yscrollcommand=self.sb_y.set)
 
     def refresh_display(self):
         """
         Refreshes the window.
         """
-        self.main.grid_forget()
+        self.frame_master.grid_forget()
 
         self.init_display()
 
@@ -264,12 +284,12 @@ class SquashInterface:
     def init_display(self):
         """
         """
-        self.main.grid(column=0, row=0, sticky='nswe')
-        self.frame.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
+        self.frame_master.grid(column=0, row=0, sticky='nswe')
+        self.frame_mainWindow.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
 
-        self.b_power.grid(column=0, row=0, padx=8, pady=2, sticky='we')
-        self.h_bar.grid(column=0, row=1, columnspan=7, rowspan=1, sticky='we')
-        self.f_view.grid(
+        self.button_power.grid(column=0, row=0, padx=8, pady=2, sticky='we')
+        self.separatorH_main.grid(column=0, row=1, columnspan=7, rowspan=1, sticky='we')
+        self.frame_primaryUI.grid(
             column=1,
             row=2,
             columnspan=6,
@@ -279,24 +299,24 @@ class SquashInterface:
             sticky='nswe',
         )
 
-        self.c_view.grid(column=0, row=0, padx=2, pady=2, sticky='nswe')
-        self.w_view = self.c_view.create_window(
-            0, 0, window=self.f_box, anchor='nw'
+        self.canvas_primaryUI.grid(column=0, row=0, padx=2, pady=2, sticky='nswe')
+        self.w_view = self.canvas_primaryUI.create_window(
+            0, 0, window=self.frame_secondaryUI, anchor='nw'
         )
 
         def _fill_canvas(event):
             if self.fig is not None:
                 return
 
-            self.c_view.itemconfig(self.w_view, width=event.width)
-            self.c_view.itemconfig(self.w_view, height=event.height)
+            self.canvas_primaryUI.itemconfig(self.w_view, width=event.width)
+            self.canvas_primaryUI.itemconfig(self.w_view, height=event.height)
 
-        self.c_view.bind('<Configure>', _fill_canvas)
+        self.canvas_primaryUI.bind('<Configure>', _fill_canvas)
 
-        self.p_bar.grid(column=1, row=8, columnspan=6, padx=8, sticky='we')
-        self.l_bar.grid(column=1, row=9, columnspan=6, padx=4, sticky='we')
+        self.progressBar_mainView.grid(column=1, row=8, columnspan=6, padx=8, sticky='we')
+        self.label_notificationBar.grid(column=1, row=9, columnspan=6, padx=4, sticky='we')
 
-        self.s_zoom.grid(column=0, row=8, rowspan=2, padx=8, sticky='we')
+        self.scaleSlider_zoom.grid(column=0, row=8, rowspan=2, padx=8, sticky='we')
 
         self.sb_x.grid(column=0, row=1, padx=2, pady=2, sticky='nswe')
         self.sb_y.grid(column=1, row=0, padx=2, pady=2, sticky='nswe')
@@ -324,8 +344,8 @@ class SquashInterface:
         self.scale = scale
 
     def reset_view(self):
-        self.c_view.xview_moveto(0)
-        self.c_view.yview_moveto(0)
+        self.canvas_primaryUI.xview_moveto(0)
+        self.canvas_primaryUI.yview_moveto(0)
 
     def place_canvas(self):
         self.canvas.get_tk_widget().grid(column=7, row=8, sticky='nswe')
@@ -344,13 +364,13 @@ class SquashInterface:
     def update_bounds(self):
         self.master.update()
 
-        if (width := self.f_box.winfo_reqwidth()) > self.f_view.winfo_width() - 4:
-            self.c_view.itemconfig(self.w_view, width=width)
+        if (width := self.frame_secondaryUI.winfo_reqwidth()) > self.frame_primaryUI.winfo_width() - 4:
+            self.canvas_primaryUI.itemconfig(self.w_view, width=width)
 
-        if (height := self.f_box.winfo_reqheight()) > self.f_view.winfo_height() - 4:
-            self.c_view.itemconfig(self.w_view, height=height)
+        if (height := self.frame_secondaryUI.winfo_reqheight()) > self.frame_primaryUI.winfo_height() - 4:
+            self.canvas_primaryUI.itemconfig(self.w_view, height=height)
 
-        self.c_view.config(scrollregion=(0, 0, width, height))
+        self.canvas_primaryUI.config(scrollregion=(0, 0, width, height))
 
     def refresh_figure(self, event):
         if self.canvas is not None:
@@ -363,7 +383,7 @@ class SquashInterface:
         if self.canvas is not None:
             self.clear_figure()
 
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.f_box)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame_secondaryUI)
         self.canvas.draw()
 
         self.place_canvas()
@@ -379,101 +399,101 @@ class SquashInterface:
         self.canvas = None
 
     def clear_action_group(self):
-        self.e_text.delete(0, tk.END)
-        self.e_text.grid_forget()
-        self.b_action.grid_forget()
+        self.entry_text.delete(0, tk.END)
+        self.entry_text.grid_forget()
+        self.button_action.grid_forget()
     
     # Install Group clear and replace functions
     
     def place_install_group(self):
         row = 3 if self.state is SIStates.INSERT else 21
 
-        self.l_install.grid(column=0, row=row, rowspan=2, padx=2, pady=1, sticky='we')
-        self.l_rack.grid(column=1, row=row, padx=2, pady=1, sticky='we')
-        self.e_rack.grid(column=1, row=row + 1, padx=2, pady=1, sticky='we')
-        self.l_crate.grid(column=2, row=row, padx=2, pady=1, sticky='we')
-        self.e_crate.grid(column=2, row=row + 1, padx=2, pady=1, sticky='we')
-        self.l_slot.grid(column=3, row=row, padx=2, pady=1, sticky='we')
-        self.e_slot.grid(column=3, row=row + 1, padx=2, pady=1, sticky='we')
-        self.l_det.grid(column=4, row=row, padx=2, pady=1, sticky='we')
-        self.e_det.grid(column=4, row=row + 1, padx=2, pady=1, sticky='we')
+        self.label_installation.grid(column=0, row=row, rowspan=2, padx=2, pady=1, sticky='we')
+        self.label_rack.grid(column=1, row=row, padx=2, pady=1, sticky='we')
+        self.entry_rack.grid(column=1, row=row + 1, padx=2, pady=1, sticky='we')
+        self.label_crate.grid(column=2, row=row, padx=2, pady=1, sticky='we')
+        self.entry_crate.grid(column=2, row=row + 1, padx=2, pady=1, sticky='we')
+        self.label_slot.grid(column=3, row=row, padx=2, pady=1, sticky='we')
+        self.entry_slot.grid(column=3, row=row + 1, padx=2, pady=1, sticky='we')
+        self.label_detector.grid(column=4, row=row, padx=2, pady=1, sticky='we')
+        self.combobox_detector.grid(column=4, row=row + 1, padx=2, pady=1, sticky='we')
 
     def clear_install_group(self):
-        self.l_install.grid_forget()
-        self.l_rack.grid_forget()
-        self.e_rack.delete(0, tk.END)
-        self.e_rack.grid_forget()
-        self.l_crate.grid_forget()
-        self.e_crate.delete(0, tk.END)
-        self.e_crate.grid_forget()
-        self.l_slot.grid_forget()
-        self.e_slot.delete(0, tk.END)
-        self.e_slot.grid_forget()
-        self.l_det.grid_forget()
-        self.e_det.delete(0, tk.END)
-        self.e_det.grid_forget()
+        self.label_installation.grid_forget()
+        self.label_rack.grid_forget()
+        self.entry_rack.delete(0, tk.END)
+        self.entry_rack.grid_forget()
+        self.label_crate.grid_forget()
+        self.entry_crate.delete(0, tk.END)
+        self.entry_crate.grid_forget()
+        self.label_slot.grid_forget()
+        self.entry_slot.delete(0, tk.END)
+        self.entry_slot.grid_forget()
+        self.label_detector.grid_forget()
+        self.combobox_detector.delete(0, tk.END)
+        self.combobox_detector.grid_forget()
     
     # Record Group clear and replace functions
     
     def place_record_group(self):
-        self.l_serial.grid(column=0, row=18, padx=2, pady=1, sticky='we')
-        self.e_serial.grid(column=1, row=18, columnspan=3, padx=2, pady=1, sticky='we')
-        self.l_qrcode.grid(column=0, row=19, padx=2, pady=1, sticky='we')
-        self.e_qrcode.grid(column=1, row=19, columnspan=3, padx=2, pady=1, sticky='we')
-        self.l_location.grid(column=0, row=20, padx=2, pady=1, sticky='we')
-        self.e_location.grid(column=1, row=20, columnspan=3, padx=2, pady=1, sticky='we')
-        self.l_comment.grid(column=0, row=23, padx=2, pady=1, sticky='we')
-        self.e_comment.grid(column=1, row=23, columnspan=4, padx=2, pady=1, sticky='we')
-        self.l_token.grid(column=0, row=24, padx=2, pady=1, sticky='we')
-        self.e_token.grid(column=1, row=24, columnspan=4, padx=2, pady=1, sticky='we')
-        self.b_token.grid(column=5, row=24, padx=2, pady=1, sticky='we')
-        self.l_status.grid(column=0, row=25, rowspan=2, padx=2, sticky='we')
+        self.label_serialNumber.grid(column=0, row=18, padx=2, pady=1, sticky='we')
+        self.entry_serialNumber.grid(column=1, row=18, columnspan=3, padx=2, pady=1, sticky='we')
+        self.label_qrCode.grid(column=0, row=19, padx=2, pady=1, sticky='we')
+        self.entry_qrCode.grid(column=1, row=19, columnspan=3, padx=2, pady=1, sticky='we')
+        self.label_boardLocation.grid(column=0, row=20, padx=2, pady=1, sticky='we')
+        self.combobox_boardLocation.grid(column=1, row=20, columnspan=3, padx=2, pady=1, sticky='we')
+        self.label_comment.grid(column=0, row=23, padx=2, pady=1, sticky='we')
+        self.entry_comment.grid(column=1, row=23, columnspan=4, padx=2, pady=1, sticky='we')
+        self.label_tokenPass.grid(column=0, row=24, padx=2, pady=1, sticky='we')
+        self.entry_tokenPass.grid(column=1, row=24, columnspan=4, padx=2, pady=1, sticky='we')
+        self.button_tokenPass.grid(column=5, row=24, padx=2, pady=1, sticky='we')
+        self.label_status.grid(column=0, row=25, rowspan=2, padx=2, sticky='we')
 
         if self.version == 'adc':
-            self.s_calib.grid(column=1, row=25, columnspan=3, padx=2, sticky='w')
-        self.s_token.grid(column=1, row=26, columnspan=3, padx=2, sticky='w')
+            self.spinbox_calibration.grid(column=1, row=25, columnspan=3, padx=2, sticky='w')
+        self.spinbox_tokenPass.grid(column=1, row=26, columnspan=3, padx=2, sticky='w')
 
-        self.b_record['text'] = 'edit'
-        self.b_record['command'] = self.on_click_edit
-        self.b_record.grid(column=0, row=27, columnspan=4, rowspan=1, pady=4)
+        self.button_recordStatus['text'] = 'edit'
+        self.button_recordStatus['command'] = self.on_click_edit
+        self.button_recordStatus.grid(column=0, row=27, columnspan=4, rowspan=1, pady=4)
 
     def clear_record_group(self):
-        self.e_serial.configure(state='normal')
+        self.entry_serialNumber.configure(state='normal')
 
-        self.l_serial.grid_forget()
-        self.e_serial.delete(0, tk.END)
-        self.e_serial.grid_forget()
-        self.l_qrcode.grid_forget()
-        self.e_qrcode.delete(0, tk.END)
-        self.e_qrcode.grid_forget()
-        self.l_location.grid_forget()
-        self.e_location.delete(0, tk.END)
-        self.e_location.grid_forget()
-        self.l_install.grid_forget()
-        self.l_rack.grid_forget()
-        self.e_rack.delete(0, tk.END)
-        self.e_rack.grid_forget()
-        self.l_crate.grid_forget()
-        self.e_crate.delete(0, tk.END)
-        self.e_crate.grid_forget()
-        self.l_slot.grid_forget()
-        self.e_slot.delete(0, tk.END)
-        self.e_slot.grid_forget()
-        self.l_det.grid_forget()
-        self.e_det.delete(0, tk.END)
-        self.e_det.grid_forget()
-        self.l_comment.grid_forget()
-        self.e_comment.delete(0, tk.END)
-        self.e_comment.grid_forget()
-        self.l_token.grid_forget()
-        self.e_token.delete(0, tk.END)
-        self.e_token.grid_forget()
-        self.b_token.grid_forget()
-        self.l_status.grid_forget()
-        self.s_calib.grid_forget()
-        self.s_token.grid_forget()
+        self.label_serialNumber.grid_forget()
+        self.entry_serialNumber.delete(0, tk.END)
+        self.entry_serialNumber.grid_forget()
+        self.label_qrCode.grid_forget()
+        self.entry_qrCode.delete(0, tk.END)
+        self.entry_qrCode.grid_forget()
+        self.label_boardLocation.grid_forget()
+        self.combobox_boardLocation.delete(0, tk.END)
+        self.combobox_boardLocation.grid_forget()
+        self.label_installation.grid_forget()
+        self.label_rack.grid_forget()
+        self.entry_rack.delete(0, tk.END)
+        self.entry_rack.grid_forget()
+        self.label_crate.grid_forget()
+        self.entry_crate.delete(0, tk.END)
+        self.entry_crate.grid_forget()
+        self.label_slot.grid_forget()
+        self.entry_slot.delete(0, tk.END)
+        self.entry_slot.grid_forget()
+        self.label_detector.grid_forget()
+        self.combobox_detector.delete(0, tk.END)
+        self.combobox_detector.grid_forget()
+        self.label_comment.grid_forget()
+        self.entry_comment.delete(0, tk.END)
+        self.entry_comment.grid_forget()
+        self.label_tokenPass.grid_forget()
+        self.entry_tokenPass.delete(0, tk.END)
+        self.entry_tokenPass.grid_forget()
+        self.button_tokenPass.grid_forget()
+        self.label_status.grid_forget()
+        self.spinbox_calibration.grid_forget()
+        self.spinbox_tokenPass.grid_forget()
 
-        self.b_record.grid_forget()
+        self.button_recordStatus.grid_forget()
     
     # Draw Group clear and replace functions
     
@@ -517,22 +537,22 @@ class SquashInterface:
         if mode is SIModes.NONE:
             self.clear_action_group()
 
-            self.b_insert.grid_forget()
-            self.b_update.grid_forget()
-            self.b_select.grid_forget()
+            self.button_insert.grid_forget()
+            self.button_update.grid_forget()
+            self.button_select.grid_forget()
 
         if mode is SIModes.LOGIN:
             self.clear_action_group()
 
-            self.b_adc.grid_forget()
-            self.b_xmit.grid_forget()
+            self.button_adc.grid_forget()
+            self.button_xmit.grid_forget()
 
         if mode is SIModes.ACTIVE:
-            self.l_user.grid_forget()
-            self.e_user.delete(0, tk.END)
-            self.e_user.grid_forget()
+            self.label_access_user.grid_forget()
+            self.entry_access_user.delete(0, tk.END)
+            self.entry_access_user.grid_forget()
 
-            self.b_cont.grid_forget()
+            self.button_access_continue.grid_forget()
 
         if state is SIStates.INSERT:
             self.clear_action_group()
@@ -541,13 +561,13 @@ class SquashInterface:
             self.clear_record_group()
 
         if self.state is SIStates.UPDATE:
-            self.e_text.delete(0, tk.END)
+            self.entry_text.delete(0, tk.END)
 
         if self.state is SIStates.SELECT:
-            self.e_text.delete(0, tk.END)
+            self.entry_text.delete(0, tk.END)
 
-            self.t_info.delete(*self.t_info.get_children())
-            self.t_info.grid_forget()
+            self.treeview_boardInfo.delete(*self.treeview_boardInfo.get_children())
+            self.treeview_boardInfo.grid_forget()
 
             self.clear_record_group()
             self.clear_draw_group()
@@ -560,81 +580,81 @@ class SquashInterface:
         self.reset_view()
 
         if mode is SIModes.NONE:
-            self.b_power['text'] = 'open'
-            self.b_power['command'] = self.on_click_open
-            self.b_power.bind('<Key-Return>', self.on_click_open)
+            self.button_power['text'] = 'open'
+            self.button_power['command'] = self.on_click_open
+            self.button_power.bind('<Key-Return>', self.on_click_open)
 
-            self.b_power.focus_set()
+            self.button_power.focus_set()
 
         if mode is SIModes.OPEN:
-            self.e_text.grid(
+            self.entry_text.grid(
                 column=1, row=0, columnspan=5, rowspan=1, padx=8, sticky='we'
             )
 
-            self.b_action['text'] = 'browse'
-            self.b_action['command'] = self.on_click_browse
-            self.b_action.grid(column=6, row=0, padx=4)
+            self.button_action['text'] = 'browse'
+            self.button_action['command'] = self.on_click_browse
+            self.button_action.grid(column=6, row=0, padx=4)
 
-            self.b_adc.grid(column=0, row=2, padx=8, sticky='we')
-            self.b_xmit.grid(column=0, row=3, padx=8, sticky='we')
+            self.button_adc.grid(column=0, row=2, padx=8, sticky='we')
+            self.button_xmit.grid(column=0, row=3, padx=8, sticky='we')
 
-            self.e_text.focus_set()
+            self.entry_text.focus_set()
 
         if mode is SIModes.LOGIN:
-            self.l_user.grid(column=0, row=0, padx=2, pady=1, sticky='we')
-            self.e_user.grid(column=1, row=0, padx=2, pady=1, sticky='we')
+            self.label_access_user.grid(column=0, row=0, padx=2, pady=1, sticky='we')
+            self.entry_access_user.grid(column=1, row=0, padx=2, pady=1, sticky='we')
 
-            self.b_cont.grid(column=0, row=1, columnspan=2, rowspan=1, pady=4)
+            self.button_access_continue.grid(column=0, row=1, columnspan=2, rowspan=1, pady=4)
 
-            self.e_user.focus_set()
+            self.entry_access_user.focus_set()
 
         if mode is SIModes.ACTIVE:
-            self.b_power['text'] = 'close'
-            self.b_power['command'] = self.on_click_close
-            self.b_power.unbind('<Key-Return>')
+            self.button_power['text'] = 'close'
+            self.button_power['command'] = self.on_click_close
+            self.button_power.unbind('<Key-Return>')
 
-            self.b_insert.grid(column=0, row=2, padx=8, sticky='we')
+            self.button_insert.grid(column=0, row=2, padx=8, sticky='we')
             if self.version == 'adc':
-                self.b_update.grid(column=0, row=3, padx=8, sticky='we')
-            self.b_select.grid(column=0, row=4, padx=8, sticky='we')
+                self.button_update.grid(column=0, row=3, padx=8, sticky='we')
+            self.button_select.grid(column=0, row=4, padx=8, sticky='we')
 
         if state is SIStates.INSERT:
-            self.l_serial.grid(column=0, row=0, padx=2, pady=1, sticky='we')
-            self.e_serial.grid(column=1, row=0, columnspan=3, padx=2, pady=1, sticky='we')
-            self.l_qrcode.grid(column=0, row=1, padx=2, pady=1, sticky='we')
-            self.e_qrcode.grid(column=1, row=1, columnspan=3, padx=2, pady=1, sticky='we')
-            self.l_location.grid(column=0, row=2, padx=2, pady=1, sticky='we')
-            self.e_location.grid(column=1, row=2, columnspan=3, padx=2, pady=1, sticky='we')
-            self.l_comment.grid(column=0, row=5, padx=2,pady=1, sticky='we')
-            self.e_comment.grid(column=1, row=5, columnspan=4, padx=2,pady=1, sticky='we')
+            self.label_serialNumber.grid(column=0, row=0, padx=2, pady=1, sticky='we')
+            self.entry_serialNumber.grid(column=1, row=0, columnspan=3, padx=2, pady=1, sticky='we')
+            self.label_qrCode.grid(column=0, row=1, padx=2, pady=1, sticky='we')
+            self.entry_qrCode.grid(column=1, row=1, columnspan=3, padx=2, pady=1, sticky='we')
+            self.label_boardLocation.grid(column=0, row=2, padx=2, pady=1, sticky='we')
+            self.combobox_boardLocation.grid(column=1, row=2, columnspan=3, padx=2, pady=1, sticky='we')
+            self.label_comment.grid(column=0, row=5, padx=2,pady=1, sticky='we')
+            self.entry_comment.grid(column=1, row=5, columnspan=4, padx=2,pady=1, sticky='we')
 
-            self.b_record['text'] = 'register'
-            self.b_record['command'] = self.on_click_register
-            self.b_record.grid(column=0, row=6, columnspan=4, rowspan=1, pady=4)
+            self.button_recordStatus['text'] = 'register'
+            self.button_recordStatus['command'] = self.on_click_register
+            self.button_recordStatus.grid(column=0, row=6, columnspan=4, rowspan=1, pady=4)
 
-            self.e_serial.focus_set()
+            self.entry_serialNumber.focus_set()
 
         if state is SIStates.UPDATE:
-            self.e_text.grid(
+            self.entry_text.grid(
                 column=1, row=0, columnspan=5, rowspan=1, padx=4, sticky='we'
             )
 
-            self.b_action['text'] = 'browse'
-            self.b_action['command'] = self.on_click_browse
-            self.b_action.grid(column=6, row=0, padx=4)
+            self.button_action['text'] = 'browse'
+            self.button_action['command'] = self.on_click_browse
+            self.button_action.grid(column=6, row=0, padx=4)
 
-            self.e_text.focus_set()
+            self.entry_text.focus_set()
 
         if state is SIStates.SELECT:
-            self.e_text.grid(
+            self.entry_text.grid(
                 column=1, row=0, columnspan=5, rowspan=1, padx=4, sticky='we'
             )
 
-            self.b_action['text'] = 'filter'
-            self.b_action['command'] = self.on_carriage_return
-            self.b_action.grid(column=6, row=0, padx=4)
+            self.button_action['text'] = 'filter'
+            self.button_action['command'] = self.on_carriage_return
+            self.button_action.grid(column=6, row=0, padx=4)
 
-            self.t_info.grid(
+            self.treeview_boardInfo.grid(
                 column=0,
                 row=7,
                 columnspan=9,
@@ -644,7 +664,7 @@ class SquashInterface:
                 sticky='nswe',
             )
 
-            self.e_text.focus_set()
+            self.entry_text.focus_set()
 
     def layout_display(self, mode=None, state=None):
         if mode is None and state is self.state:
@@ -668,28 +688,28 @@ class SquashInterface:
         """
         Resets the notification at the bottom of the window to an empty string.
         """
-        self.l_bar['text'] = ''
+        self.label_notificationBar['text'] = ''
 
     def set_notify_info(self, message):
         """
         Changes the notification at the bottom of the window to an info icon
         followed by the notification message.
         """
-        self.l_bar['text'] = 'ℹ {}'.format(message)
+        self.label_notificationBar['text'] = 'ℹ {}'.format(message)
 
     def set_notify_warning(self, message):
         """
         Changes the notification at the bottom of the window to a warning icon
         followed by the notification message.
         """
-        self.l_bar['text'] = '⚠️ {}'.format(message)
+        self.label_notificationBar['text'] = '⚠️ {}'.format(message)
 
     def set_notify_error(self, message):
         """
         Changes the notification at the bottom of the window to an error icon
         followed by the notification message.
         """
-        self.l_bar['text'] = '🛑 {}'.format(message)
+        self.label_notificationBar['text'] = '🛑 {}'.format(message)
     
     # Notification and progress bar decorator functions
     
@@ -763,7 +783,7 @@ class SquashInterface:
     def on_carriage_return(self, event=None):
         self.reset_notification()
 
-        text = self.e_text.get().strip()
+        text = self.entry_text.get().strip()
 
         if self.mode is SIModes.OPEN:
             try:
@@ -803,8 +823,8 @@ class SquashInterface:
         if not path:
             return
 
-        self.e_text.delete(0, tk.END)
-        self.e_text.insert(0, path)
+        self.entry_text.delete(0, tk.END)
+        self.entry_text.insert(0, path)
 
         if multiple is True:
             self.dir = os.path.dirname(paths[0])
@@ -815,21 +835,21 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_adc(self):
-        self.e_text.delete(0, tk.END)
-        self.e_text.insert(0, ADC_DB_PATH)
+        self.entry_text.delete(0, tk.END)
+        self.entry_text.insert(0, ADC_DB_PATH)
 
         self.on_carriage_return()
 
     @Decorators.reset_warnings
     def on_click_xmit(self):
-        self.e_text.delete(0, tk.END)
-        self.e_text.insert(0, XMIT_DB_PATH)
+        self.entry_text.delete(0, tk.END)
+        self.entry_text.insert(0, XMIT_DB_PATH)
 
         self.on_carriage_return()
 
     @Decorators.reset_warnings
     def on_click_continue(self, event=None):
-        user = self.e_user.get().strip()
+        user = self.entry_access_user.get().strip()
 
         if not user:
             self.set_notify_warning('user must not be empty')
@@ -841,14 +861,14 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_register(self):
-        serial = self.e_serial.get().strip()
-        qrcode = self.e_qrcode.get().strip()
-        location = self.e_location.get().strip()
-        rack = self.e_rack.get().strip()
-        crate = self.e_crate.get().strip()
-        slot = self.e_slot.get().strip()
-        det = self.e_det.get().strip()
-        comment = self.e_comment.get().strip()
+        serial = self.entry_serialNumber.get().strip()
+        qrcode = self.entry_qrCode.get().strip()
+        location = self.combobox_boardLocation.get().strip()
+        rack = self.entry_rack.get().strip()
+        crate = self.entry_crate.get().strip()
+        slot = self.entry_slot.get().strip()
+        det = self.combobox_detector.get().strip()
+        comment = self.entry_comment.get().strip()
 
         if self.insert_database_entry(
             [serial, qrcode, location, rack, crate, slot, det, comment]
@@ -859,18 +879,18 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_edit(self):
-        serial = self.e_serial.get().strip()
-        qrcode = self.e_qrcode.get().strip()
-        location = self.e_location.get().strip()
-        rack = self.e_rack.get().strip()
-        crate = self.e_crate.get().strip()
-        slot = self.e_slot.get().strip()
-        det = self.e_det.get().strip()
-        comment = self.e_comment.get().strip()
-        token = self.e_token.get().strip()
+        serial = self.entry_serialNumber.get().strip()
+        qrcode = self.entry_qrCode.get().strip()
+        location = self.combobox_boardLocation.get().strip()
+        rack = self.entry_rack.get().strip()
+        crate = self.entry_crate.get().strip()
+        slot = self.entry_slot.get().strip()
+        det = self.combobox_detector.get().strip()
+        comment = self.entry_comment.get().strip()
+        token = self.entry_tokenPass.get().strip()
         status = (
-            self.s_calib.get()[-1] if self.version == 'adc' else ''
-        ) + self.s_token.get()[-1]
+            self.spinbox_calibration.get()[-1] if self.version == 'adc' else ''
+        ) + self.spinbox_tokenPass.get()[-1]
 
         if self.modify_database_entry(
             [qrcode, location, rack, crate, slot, det, comment, token, status]
@@ -890,8 +910,8 @@ class SquashInterface:
 
         relpath = os.path.relpath(path, os.path.dirname(self.squash.path))
 
-        self.e_token.delete(0, tk.END)
-        self.e_token.insert(0, relpath)
+        self.entry_tokenPass.delete(0, tk.END)
+        self.entry_tokenPass.insert(0, relpath)
 
         self.dir = os.path.dirname(path)
 
@@ -1018,7 +1038,7 @@ class SquashInterface:
             self.fig = draw_graph(_m, _s, **pulse_vs_sample_disp_opts)
 
         self.clear_record_group()
-        self.t_info.grid_remove()
+        self.treeview_boardInfo.grid_remove()
 
         self.place_figure()
 
@@ -1045,7 +1065,7 @@ class SquashInterface:
         self.clear_figure()
         self.reset_view()
 
-        self.t_info.grid()
+        self.treeview_boardInfo.grid()
 
     def on_select_location(self, event):
         if event.widget.get().strip() != 'BNL (sPHENIX)':
@@ -1075,41 +1095,41 @@ class SquashInterface:
 
         entry = self.squash.label(self.results[self.index])
 
-        self.e_serial.configure(state='normal')
-        self.e_serial.delete(0, tk.END)
-        self.e_serial.insert(0, entry['serial'])
-        self.e_serial.configure(state='disabled')
+        self.entry_serialNumber.configure(state='normal')
+        self.entry_serialNumber.delete(0, tk.END)
+        self.entry_serialNumber.insert(0, entry['serial'])
+        self.entry_serialNumber.configure(state='disabled')
 
-        self.e_qrcode.delete(0, tk.END)
-        self.e_qrcode.insert(0, entry['id'])
+        self.entry_qrCode.delete(0, tk.END)
+        self.entry_qrCode.insert(0, entry['id'])
 
         p = re.compile('(.*) \[.*\] <.*>')
         location = p.match(entry['location'].split(', ')[-1]).group(1)
-        self.e_location.set('  {}'.format(location))
+        self.combobox_boardLocation.set('  {}'.format(location))
 
-        self.e_rack.delete(0, tk.END)
-        self.e_rack.insert(0, entry['rack'].strip())
-        self.e_crate.delete(0, tk.END)
-        self.e_crate.insert(0, entry['crate'].strip())
-        self.e_slot.delete(0, tk.END)
-        self.e_slot.insert(0, entry['slot'].strip())
-        self.e_det.set(entry['detector'])
+        self.entry_rack.delete(0, tk.END)
+        self.entry_rack.insert(0, entry['rack'].strip())
+        self.entry_crate.delete(0, tk.END)
+        self.entry_crate.insert(0, entry['crate'].strip())
+        self.entry_slot.delete(0, tk.END)
+        self.entry_slot.insert(0, entry['slot'].strip())
+        self.combobox_detector.set(entry['detector'])
 
-        self.e_token.delete(0, tk.END)
-        self.e_token.insert(0, entry['files'].split(', ')[-1])
+        self.entry_tokenPass.delete(0, tk.END)
+        self.entry_tokenPass.insert(0, entry['files'].split(', ')[-1])
 
-        self.s_calib.set(' G/P: {}'.format(entry['status'][0]))
-        self.s_token.set(' TP: {}'.format(entry['status'][-1]))
+        self.spinbox_calibration.set(' G/P: {}'.format(entry['status'][0]))
+        self.spinbox_tokenPass.set(' TP: {}'.format(entry['status'][-1]))
 
         self.place_record_group()
 
-        self.e_location.event_generate('<<ComboboxSelected>>')
+        self.combobox_boardLocation.event_generate('<<ComboboxSelected>>')
 
         self.update_bounds()
 
     def set_progress(self, i):
-        self.p_bar['value'] = i
-        self.p_bar.update()
+        self.progressBar_mainView['value'] = i
+        self.progressBar_mainView.update()
 
     def open_database_file(self, text):
         if os.path.isfile(text) is False:
@@ -1269,7 +1289,7 @@ class SquashInterface:
 
     def _one(self, node, key, tags, values, label=None):
         text = key if label is None else label
-        self.t_info.insert(
+        self.treeview_boardInfo.insert(
             node,
             tk.END,
             '_'.join([node, key]),
@@ -1298,7 +1318,7 @@ class SquashInterface:
 
     @Decorators.show_progress
     def select_database_entry(self, text):
-        self.t_info.delete(*self.t_info.get_children())
+        self.treeview_boardInfo.delete(*self.treeview_boardInfo.get_children())
 
         if not text:
             pass
@@ -1337,7 +1357,7 @@ class SquashInterface:
 
             e_tag = '' if all(x == '?' for x in entry['status']) else s_tag
 
-            self.t_info.insert('', tk.END, e_id, tags=e_tag, text=entry['serial'])
+            self.treeview_boardInfo.insert('', tk.END, e_id, tags=e_tag, text=entry['serial'])
 
             self._insert(e_id, 'QR code', i_tag, entry['id'])
             self._insert(e_id, 'location', 'info', location[::-1])
