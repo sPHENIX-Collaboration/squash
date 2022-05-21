@@ -5,15 +5,17 @@ import sqlite3
 
 class SquashError(Exception):
     """
-    Throws a general SQLite error exception.
+    Raises a general error.
+    Inherits the error Exception class.
     """
     pass
 
 
 class SquashConnectionError(SquashError):
     """
-    If the SQLite database connection is not established or is lost, throws a
-    connection error. Inherits the SquashError class.
+    If the SQLite database connection is not established or is lost, raises a
+    connection error. 
+    Inherits the SquashError class.
     """
     def __init__(self):
         message = 'no database connection'
@@ -22,7 +24,7 @@ class SquashConnectionError(SquashError):
 
 class SquashEmptyError(SquashError):
     """
-    If the accessed database is empty, throws an empty database error.
+    If the accessed database is empty, raises an empty database error.
     Inherits the SquashError class.
     """
     def __init__(self):
@@ -40,6 +42,7 @@ class Squash:
 
     def __init__(self, path):
         """
+        Initializes the database object class.
         :param str path: The system path to the SQLite database.
         """
         self.open(path) # Takes in a database path and opens it
@@ -133,8 +136,9 @@ class Squash:
     @Decorators.check_connection
     def insert_table(self, columns, table='data'):
         """
-        :param ??? columns: 
-        :param string table: The name of the data table ???
+        Creates a data table within the provided database. ???
+        :param list/tuple columns: List of data categories to insert.
+        :param string table: The name of the database that the table is added to.
         """
         cursor = self.connection.cursor()
 
@@ -148,9 +152,10 @@ class Squash:
     @Decorators.check_empty
     def insert_entry(self, columns, data, table='data'):
         """
-        :param ??? columns: 
-        :param ??? data:
-        :param string table: The name of the data table ???
+        Inserts a row of data (as columns) into the database. ???
+        :param list/tuple columns: List of data categories to insert.
+        :param list/tuple data: List of data values to insert
+        :param string table: The name of the database that data is added to.
         """
         cursor = self.connection.cursor()
 
@@ -165,7 +170,8 @@ class Squash:
     @Decorators.check_empty
     def select_table(self, table='data'):
         """
-        :param string table: The name of the data table ???
+        Selects all data from the provided data table.
+        :param string table: The name of the data table.
         """
         cursor = self.connection.cursor()
 
@@ -178,9 +184,9 @@ class Squash:
     @Decorators.check_empty
     def select_entry(self, column, condition, table='data'):
         """
-        :param ??? column:
+        :param str column: The data type (column) that data is added under.
         :param ??? condition:
-        :param string table: The name of the data table ???
+        :param string table: The name of the database that data is added to.
         """
         cursor = self.connection.cursor()
 
@@ -193,8 +199,8 @@ class Squash:
     @Decorators.check_empty
     def update_entry(self, columns, data, condition, table='data'):
         """
-        :param ??? columns: 
-        :param ??? data:
+        :param list/tuple columns: List of data categories to insert.
+        :param list data: List of 
         :param ??? condition:
         :param string table: The name of the data table ???
         """
