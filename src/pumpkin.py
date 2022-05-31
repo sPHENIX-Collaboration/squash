@@ -41,6 +41,7 @@ class SquashInterface:
     """
     GUI class utilizing tkinter. Creates an interface for accessing and
     editing the sPHENIX Board Database.
+    Inherits the master class.
     """
     def __init__(self, master):
         self.master = master
@@ -139,43 +140,43 @@ class SquashInterface:
         """
         Initializes the dynamic application frames and elements ("widgets").
         """
-        self.button_action = ttk.Button(self.frame_mainWindow, text='action', width=6)
+        self.button_action = ttk.Button(self.frame_mainWindow, text='Action', width=6)
 
         self.entry_text = ttk.Entry(self.frame_mainWindow)
         self.entry_text.bind('<Key-Return>', self.on_carriage_return)
         
         # Primary action button
-        self.button_power = ttk.Button(self.frame_mainWindow, text='power', width=6)
+        self.button_power = ttk.Button(self.frame_mainWindow, text='Power', width=6)
         
         # ADC or XMIT database selection
-        self.button_adc = ttk.Button(self.frame_mainWindow, text='adc', width=6)
+        self.button_adc = ttk.Button(self.frame_mainWindow, text='ADC DB', width=6)
         self.button_adc['command'] = self.on_click_adc
-        self.button_xmit = ttk.Button(self.frame_mainWindow, text='xmit', width=6)
+        self.button_xmit = ttk.Button(self.frame_mainWindow, text='XMIT DB', width=6)
         self.button_xmit['command'] = self.on_click_xmit
         
         # Database edit options
-        self.button_insert = ttk.Button(self.frame_mainWindow, text='insert', width=6)
+        self.button_insert = ttk.Button(self.frame_mainWindow, text='Add New', width=6)
         self.button_insert['command'] = self.on_click_insert
-        self.button_update = ttk.Button(self.frame_mainWindow, text='update', width=6)
+        self.button_update = ttk.Button(self.frame_mainWindow, text='Update', width=6)
         self.button_update['command'] = self.on_click_update
-        self.button_select = ttk.Button(self.frame_mainWindow, text='select', width=6)
+        self.button_select = ttk.Button(self.frame_mainWindow, text='Select', width=6)
         self.button_select['command'] = self.on_click_select
         
         # Database access widgets
-        self.label_access_user = ttk.Label(self.frame_secondaryUI, text='user:', anchor='e', width=6)
+        self.label_access_user = ttk.Label(self.frame_secondaryUI, text='User:', anchor='e', width=6)
         self.entry_access_user = ttk.Entry(self.frame_secondaryUI, width=12)
         self.entry_access_user.bind('<Key-Return>', self.on_click_continue)
-        self.button_access_continue = ttk.Button(self.frame_secondaryUI, text='continue', width=8)
+        self.button_access_continue = ttk.Button(self.frame_secondaryUI, text='Continue', width=8)
         self.button_access_continue['command'] = self.on_click_continue
         
         # Board serial number and QR code entry
-        self.label_serialNumber = ttk.Label(self.frame_secondaryUI, text='serial #:', anchor='e', width=8)
+        self.label_serialNumber = ttk.Label(self.frame_secondaryUI, text='Serial #:', anchor='e', width=8)
         self.entry_serialNumber = ttk.Entry(self.frame_secondaryUI, width=16)
-        self.label_qrCode = ttk.Label(self.frame_secondaryUI, text='QR code:', anchor='e', width=8)
+        self.label_qrCode = ttk.Label(self.frame_secondaryUI, text='QR Code:', anchor='e', width=8)
         self.entry_qrCode = ttk.Entry(self.frame_secondaryUI, width=16)
         
         # Board location selector
-        self.label_boardLocation = ttk.Label(self.frame_secondaryUI, text='location:', anchor='e', width=8)
+        self.label_boardLocation = ttk.Label(self.frame_secondaryUI, text='Location:', anchor='e', width=8)
         self.combobox_boardLocation = ttk.Combobox(self.frame_secondaryUI, state=['readonly'], width=16)
         self.combobox_boardLocation['values'] = (
             '  CU Boulder',
@@ -187,22 +188,22 @@ class SquashInterface:
         self.combobox_boardLocation.bind('<<ComboboxSelected>>', self.on_select_location)
         
         # Board installation information entry
-        self.label_installation = ttk.Label(self.frame_secondaryUI, text='install:', anchor='e', width=8)
-        self.label_rack = ttk.Label(self.frame_secondaryUI, text='rack', anchor='center', width=4)
+        self.label_installation = ttk.Label(self.frame_secondaryUI, text='Install:', anchor='e', width=8)
+        self.label_rack = ttk.Label(self.frame_secondaryUI, text='Rack', anchor='center', width=4)
         self.entry_rack = ttk.Entry(self.frame_secondaryUI, width=4)
-        self.label_crate = ttk.Label(self.frame_secondaryUI, text='crate', anchor='center', width=4)
+        self.label_crate = ttk.Label(self.frame_secondaryUI, text='Crate', anchor='center', width=4)
         self.entry_crate = ttk.Entry(self.frame_secondaryUI, width=4)
-        self.label_slot = ttk.Label(self.frame_secondaryUI, text='slot', anchor='center', width=4)
+        self.label_slot = ttk.Label(self.frame_secondaryUI, text='Slot', anchor='center', width=4)
         self.entry_slot = ttk.Entry(self.frame_secondaryUI, width=4)
-        self.label_detector = ttk.Label(self.frame_secondaryUI, text='detector', anchor='center', width=8)
+        self.label_detector = ttk.Label(self.frame_secondaryUI, text='Detector', anchor='center', width=8)
         self.combobox_detector = ttk.Combobox(self.frame_secondaryUI, state=['readonly'], width=8)
         self.combobox_detector['values'] = ('', 'MBD', 'ECAL', 'HCAL', 'sEPD')
         self.combobox_detector.set('')
-        self.label_comment = ttk.Label(self.frame_secondaryUI, text='comment:', anchor='e', width=8)
+        self.label_comment = ttk.Label(self.frame_secondaryUI, text='Comment:', anchor='e', width=8)
         self.entry_comment = ttk.Entry(self.frame_secondaryUI, width=12)
         
         # Board calibration and token pass status selector
-        self.label_status = ttk.Label(self.frame_secondaryUI, text='status:', anchor='e', width=8)
+        self.label_status = ttk.Label(self.frame_secondaryUI, text='Board Status:', anchor='e', width=8)
         self.spinbox_calibration = ttk.Spinbox(self.frame_secondaryUI, state=['readonly'], width=12)
         self.spinbox_calibration['values'] = (' G/P: ?', ' G/P: P', ' G/P: F')
         self.spinbox_tokenPass = ttk.Spinbox(self.frame_secondaryUI, state=['readonly'], width=12)
@@ -211,7 +212,7 @@ class SquashInterface:
         self.button_recordStatus = ttk.Button(self.frame_secondaryUI, text='record status', width=8)
         
         # Token pass data entry
-        self.label_tokenPass = ttk.Label(self.frame_secondaryUI, text='tp data:', anchor='e', width=8)
+        self.label_tokenPass = ttk.Label(self.frame_secondaryUI, text='TP Data:', anchor='e', width=8)
         self.entry_tokenPass = ttk.Entry(self.frame_secondaryUI, width=12)
         self.button_tokenPass = ttk.Button(self.frame_secondaryUI, text='...', width=1)
         self.button_tokenPass['command'] = self.on_click_token
@@ -226,50 +227,50 @@ class SquashInterface:
         self.treeview_boardInfo.tag_configure('warn', background='#f8bd96')
         self.treeview_boardInfo.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
 
-        self.f_draw = ttk.Labelframe(self.frame_mainWindow)
+        self.labelframe_draw = ttk.Labelframe(self.frame_mainWindow)
 
-        self.f_draw.columnconfigure(2, weight=1)
-        self.f_draw.rowconfigure(0, weight=1)
-        self.f_draw.rowconfigure(3, weight=1)
+        self.labelframe_draw.columnconfigure(2, weight=1)
+        self.labelframe_draw.rowconfigure(0, weight=1)
+        self.labelframe_draw.rowconfigure(3, weight=1)
 
-        self.n_draw = ttk.Notebook(self.f_draw)
+        self.notebook_draw = ttk.Notebook(self.labelframe_draw)
 
-        self.f_summary = ttk.Frame(self.n_draw)
-        self.f_channel = ttk.Frame(self.n_draw)
+        self.frame_summary = ttk.Frame(self.notebook_draw)
+        self.frame_channel = ttk.Frame(self.notebook_draw)
 
-        self.f_summary.columnconfigure(0, minsize=80)
-        self.f_summary.columnconfigure(1, minsize=120)
-        self.f_channel.columnconfigure(0, minsize=80)
-        self.f_channel.columnconfigure(1, minsize=120)
+        self.frame_summary.columnconfigure(0, minsize=80)
+        self.frame_summary.columnconfigure(1, minsize=120)
+        self.frame_channel.columnconfigure(0, minsize=80)
+        self.frame_channel.columnconfigure(1, minsize=120)
 
-        self.n_draw.add(self.f_summary, text='summary')
-        self.n_draw.add(self.f_channel, text=' pulse ')
+        self.notebook_draw.add(self.frame_summary, text='summary')
+        self.notebook_draw.add(self.frame_channel, text=' pulse ')
 
-        self.b_draw = ttk.Button(self.f_draw, text='draw', width=6)
-        self.b_draw['command'] = self.on_click_draw
-        self.b_save = ttk.Button(self.f_draw, text='save', width=6)
-        self.b_save['command'] = self.on_click_save
-        self.b_save['state'] = 'disabled'
+        self.button_draw = ttk.Button(self.labelframe_draw, text='Draw', width=6)
+        self.button_draw['command'] = self.on_click_draw
+        self.button_save = ttk.Button(self.labelframe_draw, text='Save', width=6)
+        self.button_save['command'] = self.on_click_save
+        self.button_save['state'] = 'disabled'
 
-        self.b_back = ttk.Button(self.frame_secondaryUI, text='back', width=6)
-        self.b_back['command'] = self.on_click_back
+        self.button_back = ttk.Button(self.frame_secondaryUI, text='Back', width=6)
+        self.button_back['command'] = self.on_click_back
 
-        self.l_summary = ttk.Label(self.f_summary, text='channel', anchor='e')
-        self.e_summary = ttk.Entry(self.f_summary, width=9)
-        self.l_channel = ttk.Label(self.f_channel, text='channel', anchor='e')
-        self.e_channel = ttk.Entry(self.f_channel, width=9)
-        self.l_pulse = ttk.Label(self.f_channel, text='pulse', anchor='e')
-        self.e_pulse = ttk.Entry(self.f_channel, width=9)
+        self.label_summary = ttk.Label(self.frame_summary, text='Channel', anchor='e')
+        self.entry_summary = ttk.Entry(self.frame_summary, width=9)
+        self.label_channel = ttk.Label(self.frame_channel, text='Channel', anchor='e')
+        self.entry_channel = ttk.Entry(self.frame_channel, width=9)
+        self.label_pulse = ttk.Label(self.frame_channel, text='Pulse', anchor='e')
+        self.entry_pulse = ttk.Entry(self.frame_channel, width=9)
 
-        self.sb_x = ttk.Scrollbar(self.frame_primaryUI, orient='horizontal')
-        self.sb_x.config(command=self.canvas_primaryUI.xview)
-        self.sb_y = ttk.Scrollbar(self.frame_primaryUI, orient='vertical')
-        self.sb_y.config(command=self.canvas_primaryUI.yview)
-        self.sb_r = ttk.Label(self.frame_primaryUI, text='⟳')
-        self.sb_r.bind('<ButtonRelease-1>', self.refresh_figure)
+        self.scrollbar_x = ttk.Scrollbar(self.frame_primaryUI, orient='horizontal')
+        self.scrollbar_x.config(command=self.canvas_primaryUI.xview)
+        self.scrollbar_y = ttk.Scrollbar(self.frame_primaryUI, orient='vertical')
+        self.scrollbar_y.config(command=self.canvas_primaryUI.yview)
+        self.label_scrollbarRefresh = ttk.Label(self.frame_primaryUI, text='⟳')
+        self.label_scrollbarRefresh.bind('<ButtonRelease-1>', self.refresh_figure)
 
-        self.canvas_primaryUI.config(xscrollcommand=self.sb_x.set)
-        self.canvas_primaryUI.config(yscrollcommand=self.sb_y.set)
+        self.canvas_primaryUI.config(xscrollcommand=self.scrollbar_x.set)
+        self.canvas_primaryUI.config(yscrollcommand=self.scrollbar_y.set)
 
     def refresh_display(self):
         """
@@ -283,6 +284,7 @@ class SquashInterface:
 
     def init_display(self):
         """
+        
         """
         self.frame_master.grid(column=0, row=0, sticky='nswe')
         self.frame_mainWindow.grid(column=0, row=0, padx=8, pady=4, sticky='nswe')
@@ -318,9 +320,9 @@ class SquashInterface:
 
         self.scaleSlider_zoom.grid(column=0, row=8, rowspan=2, padx=8, sticky='we')
 
-        self.sb_x.grid(column=0, row=1, padx=2, pady=2, sticky='nswe')
-        self.sb_y.grid(column=1, row=0, padx=2, pady=2, sticky='nswe')
-        self.sb_r.grid(column=1, row=1, padx=2, pady=2, sticky='nswe')
+        self.scrollbar_x.grid(column=0, row=1, padx=2, pady=2, sticky='nswe')
+        self.scrollbar_y.grid(column=1, row=0, padx=2, pady=2, sticky='nswe')
+        self.label_scrollbarRefresh.grid(column=1, row=1, padx=2, pady=2, sticky='nswe')
 
         self.layout_display(self.mode, self.state)
 
@@ -351,15 +353,15 @@ class SquashInterface:
         self.canvas.get_tk_widget().grid(column=7, row=8, sticky='nswe')
 
         if self.state is SIStates.SELECT:
-            self.b_save['state'] = 'normal'
-            self.b_back.grid(column=7, row=9, padx=4, pady=4)
+            self.button_save['state'] = 'normal'
+            self.button_back.grid(column=7, row=9, padx=4, pady=4)
 
     def clear_canvas(self):
         self.canvas.get_tk_widget().grid_forget()
 
         if self.state is SIStates.SELECT:
-            self.b_save['state'] = 'disabled'
-            self.b_back.grid_forget()
+            self.button_save['state'] = 'disabled'
+            self.button_back.grid_forget()
 
     def update_bounds(self):
         self.master.update()
@@ -403,7 +405,9 @@ class SquashInterface:
         self.entry_text.grid_forget()
         self.button_action.grid_forget()
     
+    
     # Install Group clear and replace functions
+    
     
     def place_install_group(self):
         row = 3 if self.state is SIStates.INSERT else 21
@@ -433,7 +437,9 @@ class SquashInterface:
         self.combobox_detector.delete(0, tk.END)
         self.combobox_detector.grid_forget()
     
+    
     # Record Group clear and replace functions
+    
     
     def place_record_group(self):
         self.label_serialNumber.grid(column=0, row=18, padx=2, pady=1, sticky='we')
@@ -495,37 +501,39 @@ class SquashInterface:
 
         self.button_recordStatus.grid_forget()
     
+    
     # Draw Group clear and replace functions
     
+    
     def place_draw_group(self):
-        self.f_draw.grid(column=1, row=7, columnspan=6, rowspan=1, sticky='nswe')
-        self.n_draw.grid(column=0, row=0, columnspan=1, rowspan=4, sticky='nswe')
-        self.l_summary.grid(column=0, row=0, padx=2, sticky='we')
-        self.e_summary.grid(column=1, row=0, padx=2, sticky='we')
-        self.l_channel.grid(column=0, row=0, padx=2, sticky='we')
-        self.e_channel.grid(column=1, row=0, padx=2, sticky='we')
-        self.l_pulse.grid(column=0, row=1, padx=2, sticky='we')
-        self.e_pulse.grid(column=1, row=1, padx=2, sticky='we')
+        self.labelframe_draw.grid(column=1, row=7, columnspan=6, rowspan=1, sticky='nswe')
+        self.notebook_draw.grid(column=0, row=0, columnspan=1, rowspan=4, sticky='nswe')
+        self.label_summary.grid(column=0, row=0, padx=2, sticky='we')
+        self.entry_summary.grid(column=1, row=0, padx=2, sticky='we')
+        self.label_channel.grid(column=0, row=0, padx=2, sticky='we')
+        self.entry_channel.grid(column=1, row=0, padx=2, sticky='we')
+        self.label_pulse.grid(column=0, row=1, padx=2, sticky='we')
+        self.entry_pulse.grid(column=1, row=1, padx=2, sticky='we')
 
-        self.b_draw.grid(column=1, row=1, sticky='we')
-        self.b_save.grid(column=1, row=2, sticky='we')
+        self.button_draw.grid(column=1, row=1, sticky='we')
+        self.button_save.grid(column=1, row=2, sticky='we')
 
     def clear_draw_group(self):
-        self.f_draw.grid_forget()
-        self.n_draw.grid_forget()
-        self.l_summary.grid_forget()
-        self.e_summary.delete(0, tk.END)
-        self.e_summary.grid_forget()
-        self.l_channel.grid_forget()
-        self.e_channel.delete(0, tk.END)
-        self.e_channel.grid_forget()
-        self.l_pulse.grid_forget()
-        self.e_pulse.delete(0, tk.END)
-        self.e_pulse.grid_forget()
+        self.labelframe_draw.grid_forget()
+        self.notebook_draw.grid_forget()
+        self.label_summary.grid_forget()
+        self.entry_summary.delete(0, tk.END)
+        self.entry_summary.grid_forget()
+        self.label_channel.grid_forget()
+        self.entry_channel.delete(0, tk.END)
+        self.entry_channel.grid_forget()
+        self.label_pulse.grid_forget()
+        self.entry_pulse.delete(0, tk.END)
+        self.entry_pulse.grid_forget()
 
-        self.b_draw.grid_forget()
-        self.b_save.grid_forget()
-        self.b_back.grid_forget()
+        self.button_draw.grid_forget()
+        self.button_save.grid_forget()
+        self.button_back.grid_forget()
     
     # Display clear and replace functions
     
@@ -580,7 +588,7 @@ class SquashInterface:
         self.reset_view()
 
         if mode is SIModes.NONE:
-            self.button_power['text'] = 'open'
+            self.button_power['text'] = 'Open DB'
             self.button_power['command'] = self.on_click_open
             self.button_power.bind('<Key-Return>', self.on_click_open)
 
@@ -591,7 +599,7 @@ class SquashInterface:
                 column=1, row=0, columnspan=5, rowspan=1, padx=8, sticky='we'
             )
 
-            self.button_action['text'] = 'browse'
+            self.button_action['text'] = 'Browse'
             self.button_action['command'] = self.on_click_browse
             self.button_action.grid(column=6, row=0, padx=4)
 
@@ -609,7 +617,7 @@ class SquashInterface:
             self.entry_access_user.focus_set()
 
         if mode is SIModes.ACTIVE:
-            self.button_power['text'] = 'close'
+            self.button_power['text'] = 'Close DB'
             self.button_power['command'] = self.on_click_close
             self.button_power.unbind('<Key-Return>')
 
@@ -628,7 +636,7 @@ class SquashInterface:
             self.label_comment.grid(column=0, row=5, padx=2,pady=1, sticky='we')
             self.entry_comment.grid(column=1, row=5, columnspan=4, padx=2,pady=1, sticky='we')
 
-            self.button_recordStatus['text'] = 'register'
+            self.button_recordStatus['text'] = 'Register'
             self.button_recordStatus['command'] = self.on_click_register
             self.button_recordStatus.grid(column=0, row=6, columnspan=4, rowspan=1, pady=4)
 
@@ -639,7 +647,7 @@ class SquashInterface:
                 column=1, row=0, columnspan=5, rowspan=1, padx=4, sticky='we'
             )
 
-            self.button_action['text'] = 'browse'
+            self.button_action['text'] = 'Browse'
             self.button_action['command'] = self.on_click_browse
             self.button_action.grid(column=6, row=0, padx=4)
 
@@ -650,7 +658,7 @@ class SquashInterface:
                 column=1, row=0, columnspan=5, rowspan=1, padx=4, sticky='we'
             )
 
-            self.button_action['text'] = 'filter'
+            self.button_action['text'] = 'Filter'
             self.button_action['command'] = self.on_carriage_return
             self.button_action.grid(column=6, row=0, padx=4)
 
@@ -694,6 +702,7 @@ class SquashInterface:
         """
         Changes the notification at the bottom of the window to an info icon
         followed by the notification message.
+        :param str message: The notification message as a text string.
         """
         self.label_notificationBar['text'] = 'ℹ {}'.format(message)
 
@@ -701,6 +710,7 @@ class SquashInterface:
         """
         Changes the notification at the bottom of the window to a warning icon
         followed by the notification message.
+        :param str message: The notification message as a text string.
         """
         self.label_notificationBar['text'] = '⚠️ {}'.format(message)
 
@@ -708,6 +718,7 @@ class SquashInterface:
         """
         Changes the notification at the bottom of the window to an error icon
         followed by the notification message.
+        :param str message: The notification message as a text string.
         """
         self.label_notificationBar['text'] = '🛑 {}'.format(message)
     
@@ -719,6 +730,7 @@ class SquashInterface:
             """
             Resets the progress bar at the bottom of the window before running
             the associated function.
+            :param function f: The function that is wrapped by the decorator.
             """
             def wrapper(self, *args, **kwargs):
                 self.set_progress(0)
@@ -732,6 +744,7 @@ class SquashInterface:
             Triggers the display of a progress bar for applicable functions.
             Resets the progress bar to zero before running the function, and
             forces it to 100% once the function is complete.
+            :param function f: The function that is wrapped by the decorator.
             """
             def wrapper(self, *args, **kwargs):
                 self.set_progress(0)
@@ -745,6 +758,7 @@ class SquashInterface:
             """
             Resets the notification at the bottom of the window before running
             the associated function.
+            :param function f: The function that is wrapped by the decorator.
             """
             def wrapper(self, *args, **kwargs):
                 self.reset_notification()
@@ -922,10 +936,10 @@ class SquashInterface:
 
         entry = self.squash.label(self.results[self.index])
 
-        index = self.n_draw.index(self.n_draw.select())
+        index = self.notebook_draw.index(self.notebook_draw.select())
 
         if index == 0:
-            sel = slice_from_string(self.e_summary.get().strip())
+            sel = slice_from_string(self.entry_summary.get().strip())
 
             if sel is None:
                 self.set_notify_warning('invalid selection')
@@ -978,8 +992,8 @@ class SquashInterface:
 
             self.fig = draw_graph(_y, None, **pulse_max_vs_step_disp_opts)
         elif index == 1:
-            csel = slice_from_string(self.e_channel.get().strip())
-            psel = slice_from_string(self.e_pulse.get().strip())
+            csel = slice_from_string(self.entry_channel.get().strip())
+            psel = slice_from_string(self.entry_pulse.get().strip())
 
             if csel is None or psel is None:
                 self.set_notify_warning('invalid selection')
@@ -1084,7 +1098,7 @@ class SquashInterface:
 
         entry = self.squash.label(self.results[self.index])
 
-        self.f_draw['text'] = entry['serial']
+        self.labelframe_draw['text'] = entry['serial']
         self.place_draw_group()
 
     def on_edit_entry(self, event):
