@@ -34,15 +34,15 @@ class SquashEmptyError(SquashError):
 
 class Squash:
     """
-    Creates a database object for handling board data. Takes in a database
-    file path on creation.
+    Creates an object for handling board data and interfacing with the SQL
+    database. Takes in a database file path on creation.
     """
     connection = None
     path = None
 
     def __init__(self, path):
         """
-        Initializes the database object class.
+        Initializes a Squash object that interfaces with the board database.
         :param str path: The system path to the SQLite database.
         """
         self.open(path) # Takes in a database path and opens it
@@ -118,12 +118,16 @@ class Squash:
         Commits data to the database.
         """
         self.connection.commit()
-
+    
+    
+    # SQL Query Functions
+    
+    
     @Decorators.check_connection
     def query(self, command):
         """
         Queries the database and executes the provided SQLite command.
-        :param ??? command:
+        :param str command: SQL command to execute.
         """
         cursor = self.connection.cursor()
 
@@ -138,7 +142,7 @@ class Squash:
         """
         Creates a data table within the provided database. ???
         :param list/tuple columns: List of data categories to insert.
-        :param string table: The name of the database that the table is added to.
+        :param str table: The name of the database that the table is added to.
         """
         cursor = self.connection.cursor()
 
@@ -155,7 +159,7 @@ class Squash:
         Inserts a row of data (as columns) into the database. ???
         :param list/tuple columns: List of data categories to insert.
         :param list/tuple data: List of data values to insert
-        :param string table: The name of the database that data is added to.
+        :param str table: The name of the database that data is added to.
         """
         cursor = self.connection.cursor()
 
@@ -171,7 +175,7 @@ class Squash:
     def select_table(self, table='data'):
         """
         Selects all data from the provided data table.
-        :param string table: The name of the data table.
+        :param str table: The name of the data table.
         """
         cursor = self.connection.cursor()
 
@@ -184,9 +188,10 @@ class Squash:
     @Decorators.check_empty
     def select_entry(self, column, condition, table='data'):
         """
+        Selects data from the database that satisfies a particular condition. ???
         :param str column: The data type (column) that data is added under.
-        :param ??? condition:
-        :param string table: The name of the database that data is added to.
+        :param str condition: Conditional statements for the query.
+        :param str table: The name of the table to access data from.
         """
         cursor = self.connection.cursor()
 
@@ -199,10 +204,11 @@ class Squash:
     @Decorators.check_empty
     def update_entry(self, columns, data, condition, table='data'):
         """
+        Updates a database entry.
         :param list/tuple columns: List of data categories to insert.
-        :param list data: List of 
-        :param ??? condition:
-        :param string table: The name of the data table ???
+        :param list data: List of datapoints to insert, corresponding to categories.
+        :param str condition: Conditional statements for the query.
+        :param str table: The name of the data table that is being updated.
         """
         cursor = self.connection.cursor()
 
