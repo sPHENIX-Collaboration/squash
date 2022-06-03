@@ -24,6 +24,9 @@ XMIT_DB_PATH = '/gpfs/mnt/gpfs02/sphenix/user/cmcginn/sPHENIXBoards/squash/src/X
 
 
 class SIModes(Enum):
+    """
+    Class for handling interface modes.
+    """
     NONE = 0
     OPEN = 1
     LOGIN = 2
@@ -31,6 +34,9 @@ class SIModes(Enum):
 
 
 class SIStates(Enum):
+    """
+    Class for managing interface states.
+    """
     NONE = 0
     INSERT = 1
     UPDATE = 2
@@ -222,9 +228,13 @@ class SquashInterface:
         self.treeview_boardInfo.bind('<<TreeviewSelect>>', self.on_select_entry)
         self.treeview_boardInfo['columns'] = ['info']
         self.treeview_boardInfo.heading('info', text='...')
-        self.treeview_boardInfo.tag_configure('edit', foreground='red')
-        self.treeview_boardInfo.tag_configure('pass', background='#abe9b3')
-        self.treeview_boardInfo.tag_configure('warn', background='#f8bd96')
+        
+        # Board treeview color settings
+        self.treeview_boardInfo.tag_configure('edit', foreground='#78C6EA')
+        #self.treeview_boardInfo.tag_configure('edit', foreground='red')
+        self.treeview_boardInfo.tag_configure('pass', background='#8FE29A')
+        self.treeview_boardInfo.tag_configure('incomplete', background='#F6CD81')
+        self.treeview_boardInfo.tag_configure('warn', background='#E89B97')
         self.treeview_boardInfo.tag_bind('edit', '<ButtonRelease-1>', self.on_edit_entry)
 
         self.labelframe_draw = ttk.Labelframe(self.frame_mainWindow)
@@ -769,11 +779,18 @@ class SquashInterface:
     @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_open(self, event=None):
+        """
+        Triggers UI changes when clicking the open button.
+        :param event: Click event type.
+        """
         self.layout_display(SIModes.OPEN, None)
 
     @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_close(self):
+        """
+        Triggers UI changes when clicking the close button.
+        """
         self.layout_display(SIModes.NONE, SIStates.NONE)
 
         self.close_database_file()
@@ -781,20 +798,32 @@ class SquashInterface:
     @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_insert(self):
+        """
+        Triggers UI changes when clicking the insert button.
+        """
         self.layout_display(None, SIStates.INSERT)
 
     @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_select(self):
+        """
+        Triggers UI changes when clicking the select button.
+        """
         self.layout_display(None, SIStates.SELECT)
 
     @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_update(self):
+        """
+        Triggers UI changes when clicking the update button.
+        """
         self.layout_display(None, SIStates.UPDATE)
 
     @Decorators.reset_warnings
     def on_carriage_return(self, event=None):
+        """
+        XXX
+        """
         self.reset_notification()
 
         text = self.entry_text.get().strip()
@@ -828,6 +857,9 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_browse(self):
+        """
+        Triggers UI changes when clicking the 'Browse' button.
+        """
         idir = os.getcwd() if self.dir is None else self.dir
         multiple = False if self.mode is SIModes.OPEN else True
         paths = filedialog.askopenfilename(initialdir=idir, multiple=multiple)
@@ -849,6 +881,9 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_adc(self):
+        """
+        Triggers UI changes when clicking the 'ADC' button.
+        """
         self.entry_text.delete(0, tk.END)
         self.entry_text.insert(0, ADC_DB_PATH)
 
@@ -856,6 +891,9 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_xmit(self):
+        """
+        Triggers UI changes when clicking the 'XMIT' button.
+        """
         self.entry_text.delete(0, tk.END)
         self.entry_text.insert(0, XMIT_DB_PATH)
 
@@ -863,6 +901,9 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_continue(self, event=None):
+        """
+        XXX
+        """
         user = self.entry_access_user.get().strip()
 
         if not user:
@@ -875,6 +916,9 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_register(self):
+        """
+        Triggers UI changes when clicking the 'Register' button.
+        """
         serial = self.entry_serialNumber.get().strip()
         qrcode = self.entry_qrCode.get().strip()
         location = self.combobox_boardLocation.get().strip()
@@ -893,6 +937,9 @@ class SquashInterface:
 
     @Decorators.reset_warnings
     def on_click_edit(self):
+        """
+        Triggers UI changes when clicking the 'Edit' button.
+        """
         serial = self.entry_serialNumber.get().strip()
         qrcode = self.entry_qrCode.get().strip()
         location = self.combobox_boardLocation.get().strip()
@@ -919,6 +966,9 @@ class SquashInterface:
         self.set_notify_info('{} updated'.format(serial))
 
     def on_click_token(self):
+        """
+        XXX
+        """
         idir = os.getcwd() if self.dir is None else self.dir
         path = filedialog.askopenfilename(initialdir=idir)
 
@@ -932,6 +982,9 @@ class SquashInterface:
     @Decorators.reset_warnings
     @Decorators.show_progress
     def on_click_draw(self):
+        """
+        XXX
+        """
         self.clear_figure()
 
         entry = self.squash.label(self.results[self.index])
@@ -1059,6 +1112,9 @@ class SquashInterface:
     @Decorators.reset_warnings
     @Decorators.show_progress
     def on_click_save(self):
+        """
+        Triggers UI changes when clicking the 'Save' button.
+        """
         if self.fig is None:
             return
 
@@ -1076,18 +1132,27 @@ class SquashInterface:
     @Decorators.reset_warnings
     @Decorators.reset_progress
     def on_click_back(self):
+        """
+        Triggers UI changes when clicking the 'Back' button.
+        """
         self.clear_figure()
         self.reset_view()
 
         self.treeview_boardInfo.grid()
 
     def on_select_location(self, event):
+        """
+        Triggers UI changes when clicking the 'Select' button.
+        """
         if event.widget.get().strip() != 'BNL (sPHENIX)':
             self.clear_install_group()
         else:
             self.place_install_group()
 
     def on_select_entry(self, event):
+        """
+        Triggers UI changes when clicking the 'Select' button.
+        """
         if not (selection := event.widget.selection()):
             return
 
@@ -1102,6 +1167,9 @@ class SquashInterface:
         self.place_draw_group()
 
     def on_edit_entry(self, event):
+        """
+        Triggers UI changes when clicking the 'Edit' button.
+        """
         if not (selection := event.widget.selection()):
             return
 
@@ -1142,10 +1210,18 @@ class SquashInterface:
         self.update_bounds()
 
     def set_progress(self, i):
+        """
+        Sets the progress bar to the given value.
+        :param float i: Progress bar position between 0 and 1. XXX
+        """
         self.progressBar_mainView['value'] = i
         self.progressBar_mainView.update()
 
     def open_database_file(self, text):
+        """
+        Opens a database file at the given system path.
+        :param str text: File path.
+        """
         if os.path.isfile(text) is False:
             raise FileNotFoundError
 
@@ -1157,6 +1233,9 @@ class SquashInterface:
         )
 
     def close_database_file(self):
+        """
+        Safely closes the database file.
+        """
         self.squash.close()
         self.squash = None
         self.version = None
@@ -1168,6 +1247,9 @@ class SquashInterface:
 
     @Decorators.show_progress
     def insert_database_entry(self, data):
+        """
+        XXX
+        """
         serial, qrcode, location, rack, crate, slot, det, comment = data
 
         query = 'WHERE serial = {}'.format(repr(serial))
@@ -1221,6 +1303,9 @@ class SquashInterface:
 
     @Decorators.show_progress
     def update_database_entry(self, text):
+        """
+        XXX
+        """
         if os.path.isfile(text) is False:
             raise FileNotFoundError
 
@@ -1302,6 +1387,9 @@ class SquashInterface:
         self.place_figure()
 
     def _one(self, node, key, tags, values, label=None):
+        """
+        XXX
+        """
         text = key if label is None else label
         self.treeview_boardInfo.insert(
             node,
@@ -1313,6 +1401,9 @@ class SquashInterface:
         )
 
     def _all(self, node, key, tags, values, label=None):
+        """
+        XXX
+        """
         self._one(node, key, tags[0], values[0], label=label)
 
         _node = '_'.join([node, key])
@@ -1323,6 +1414,9 @@ class SquashInterface:
             self._one(_node, _key, tags[1], _value, label='')
 
     def _insert(self, node, key, tags, values, label=None):
+        """
+        XXX 
+        """
         if not isinstance(values, list):
             return self._one(node, key, tags, values, label=label)
 
@@ -1332,6 +1426,10 @@ class SquashInterface:
 
     @Decorators.show_progress
     def select_database_entry(self, text):
+        """
+        Displays selected database entries with color-coding based on board status.
+        :param str text: SQL query string.
+        """
         self.treeview_boardInfo.delete(*self.treeview_boardInfo.get_children())
 
         if not text:
@@ -1348,7 +1446,8 @@ class SquashInterface:
         self.index = None
 
         p = re.compile('(.*) \[.*\] <.*>')
-
+        
+        # Color codes and displays counts for boards based on testing success/progress
         for i, data in enumerate(self.results):
             e_id = str(i)
 
@@ -1361,19 +1460,24 @@ class SquashInterface:
             comment = entry['comment'].split('; ')
             status = s_str.format(*entry['status'])
             files = [x if x else '-' for x in entry['files'].split(', ')]
+            
+            # Assigns display styles and color codes
+            id_tag = 'info' if entry['id'] else 'warn'
+            status_tag = 'pass' if all(x == 'P' for x in entry['status']) else 'warn'
+            if all(x == 'P' for x in entry['status']): status_tag = 'pass'
+            elif all((x == 'P' or x == '?') for x in entry['status']): status_tag = 'incomplete'
+            else: status_tag = 'warn'
 
-            i_tag = 'info' if entry['id'] else 'warn'
-            s_tag = 'pass' if all(x == 'P' for x in entry['status']) else 'warn'
+            file_bool = list(map(lambda x: int(x != '-'), files))
+            file_info = 'files | {}/4 | {}/1'.format(sum(file_bool[:4]), file_bool[-1])
+            file_tag = 'info' if sum(file_bool) == 5 else 'incomplete'
 
-            f_bool = list(map(lambda x: int(x != '-'), files))
-            f_info = 'files | {}/4 | {}/1'.format(sum(f_bool[:4]), f_bool[-1])
-            f_tag = 'info' if sum(f_bool) == 5 else 'warn'
+            entry_tag = '' if all(x == '?' for x in entry['status']) else status_tag
 
-            e_tag = '' if all(x == '?' for x in entry['status']) else s_tag
-
-            self.treeview_boardInfo.insert('', tk.END, e_id, tags=e_tag, text=entry['serial'])
-
-            self._insert(e_id, 'QR code', i_tag, entry['id'])
+            self.treeview_boardInfo.insert('', tk.END, e_id, tags=entry_tag, text=entry['serial'])
+            
+            # Builds the coded display
+            self._insert(e_id, 'QR code', id_tag, entry['id'])
             self._insert(e_id, 'location', 'info', location[::-1])
             if p.match(location[-1]).group(1) == 'BNL (sPHENIX)':
                 rcs = entry['detector'] + ': ' + ', '.join([
@@ -1383,14 +1487,18 @@ class SquashInterface:
                 self._insert(e_id, 'D: R/C/S', 'info', rcs)
             self._insert(e_id, 'history', 'info', history[::-1])
             self._insert(e_id, 'comment', 'info', comment[::-1])
-            self._insert(e_id, 'status', s_tag, status)
-            self._insert(e_id, f_info, [f_tag, 'info'], ['<expand>'] + files)
+            self._insert(e_id, 'status', status_tag, status)
+            self._insert(e_id, file_info, [file_tag, 'info'], ['<expand>'] + files)
             self._insert(e_id, 'edit', 'edit', '', label='<edit>')
 
             self.set_progress(i * 100 / len(self.results))
 
     @Decorators.show_progress
     def modify_database_entry(self, data):
+        """
+        Modifies/updates a board database entry.
+        :param list data: List of datapoints.
+        """
         qrcode, location, rack, crate, slot, det, comment, token, status = data
 
         if location == 'BNL (sPHENIX)' and (not rack or
