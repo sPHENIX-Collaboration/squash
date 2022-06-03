@@ -140,7 +140,7 @@ class Squash:
     @Decorators.check_connection
     def insert_table(self, columns, table='data'):
         """
-        Creates a data table within the provided database. ???
+        Creates a data table within the provided database. XXX
         :param list/tuple columns: List of data categories to insert.
         :param str table: The name of the database that the table is added to.
         """
@@ -156,7 +156,7 @@ class Squash:
     @Decorators.check_empty
     def insert_entry(self, columns, data, table='data'):
         """
-        Inserts a row of data (as columns) into the database. ???
+        Inserts a row of data (as columns) into the database. XXX
         :param list/tuple columns: List of data categories to insert.
         :param list/tuple data: List of data values to insert
         :param str table: The name of the database that data is added to.
@@ -188,7 +188,7 @@ class Squash:
     @Decorators.check_empty
     def select_entry(self, column, condition, table='data'):
         """
-        Selects data from the database that satisfies a particular condition. ???
+        Selects data from the database that satisfies a particular condition. XXX
         :param str column: The data type (column) that data is added under.
         :param str condition: Conditional statements for the query.
         :param str table: The name of the table to access data from.

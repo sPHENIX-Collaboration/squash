@@ -8,6 +8,8 @@ import numpy as np
 
 
 def analysis():
+    """
+    """
     data = [
         # 'dat/board0x70_Channel0to15_20210311_InjectCharge.dat',
         # 'dat/board0x70_Channel16to31_20210311_InjectCharge.dat',

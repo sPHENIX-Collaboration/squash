@@ -10,6 +10,14 @@ from utils import (
 
 
 def fit_signal(mean, sigma, nsamples, pulse, channel, **kwargs):
+    """
+    Fits a curve to provided data. XXX
+    :param XXX mean: 
+    :param XXX sigma: 
+    :param XXX nsamples: 
+    :param XXX pulse: 
+    :param XXX channel: 
+    """
     print('pulse: {}, channel: {}'.format(pulse, channel))
 
     x = np.array(range(nsamples))
@@ -36,6 +44,13 @@ def fit_signal(mean, sigma, nsamples, pulse, channel, **kwargs):
 
 
 def overlay_fit(x, y, yerr, popt):
+    """
+    Draws each component of the fit separately, for debugging purposes.
+    :param XXX x: 
+    :param XXX y: 
+    :param XXX yerr: 
+    :param XXX popt: 
+    """
     lin = np.linspace(x[0], x[-1], len(x) * 100)
 
     fun = powerlaw_doubleexp(lin, *popt)

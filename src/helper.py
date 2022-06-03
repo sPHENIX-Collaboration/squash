@@ -22,7 +22,7 @@ class SquashHelper:
         database control object.
         :param str path: The system path to the SQLite database.
         :param str table: The data table within the database. 
-        :param str version: The database version. ???
+        :param str version: The database version. XXX
         """
         self.squash = Squash(path)
         self.path = path
@@ -31,7 +31,7 @@ class SquashHelper:
         def _set(self, version):
             """
             Sets the version.
-            :param str version: The database version. ???
+            :param str version: The database version. XXX
             """
             if version is None:
                 self.version = None
@@ -61,7 +61,7 @@ class SquashHelper:
 
     def check(self, path, table='data'):
         """
-        Checks the version of the database. ???
+        Checks the version of the database. XXX
         :param str path:  The system path to the SQLite database.
         :param str table: The data table within the database.
         """
@@ -83,7 +83,7 @@ class SquashHelper:
 
     def create(self):
         """
-        ???
+        XXX
         """
         structure = self.object.structure
 
@@ -94,7 +94,7 @@ class SquashHelper:
 
     def label(self, data):
         """
-        ???
+        XXX
         """
         structure = self.object.structure
 
@@ -112,8 +112,8 @@ class SquashHelper:
 
     def insert(self, columns, data):
         """
-        :param ??? columns:
-        :param ??? data:
+        :param XXX columns:
+        :param XXX data:
         """
         return self.squash.insert_entry(columns, data, self.table)
 
@@ -122,12 +122,12 @@ class SquashHelper:
         Updates a database entry.
         :param list/tuple columns: List of data categories to insert.
         :param list data: List of datapoints to insert, corresponding to categories.
-        :param str condition: Conditional statements for the query. ???
+        :param str condition: Conditional statements for the query. XXX
         """
         return self.squash.update_entry(columns, data, condition, self.table)
 
     def select(self, condition=''):
         """
-        :param str condition: Conditional statements for the selection query. ???
+        :param str condition: Conditional statements for the selection query. XXX
         """
         return self.squash.select_entry('*', condition, self.table)

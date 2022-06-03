@@ -22,6 +22,23 @@ def draw_graph(
     fmt_data=None,
     output=True,
 ):
+    """
+    Creates a scatter plot from provided input data and parameters.
+    :param list vals: List or array of data points.
+    :param list errs: List or array of errors/uncertainties for each data point.
+    :param tuple yrange: Plot range as tuple.
+    :param int interval:
+    :param list labels: List with two string values for the x-label [0] and y-label [1].
+    :param tuple xscale: Tuple with 2 values for start and end of x-scale.
+    :param list info: List containing [xinfo, yinfo, hinfo, xalign].
+    :param layout:
+    :param tuple canvas: Tuple with 2 float values. 
+    :param tuple margins: Tuple with 4 float values for the margins around the graph.
+    :param tuple fontsizes: Tuple with 3 int values for font sizes: (axis label, ticks, annotation).
+    :param list fmt_str:
+    :param list fmt_data:
+    :param bool output: If true, the plot is displayed or saved, otherwise it is returned.
+    """
     x = xscale[0] + np.arange(0, vals.shape[-1], 1) * xscale[1]
     y = vals.squeeze()
     yerr = errs.squeeze() if errs is not None else [None] * vals.shape[-1]
@@ -102,6 +119,14 @@ def draw_graph(
 
 
 def draw_histogram(vals, bins, labels, xrange, yrange):
+    """
+    Creates a histogram plot from provided input data and parameters.
+    :param list vals: List or array of data points.
+    :param int/list bins: Number of bins OR sequential list of bin edges.
+    :param list labels: List with two string values for the x-label [0] and y-label [1].
+    :param list xrange: Horizontal plot range as list.
+    :param list yrange: Vertical plot range as list.
+    """
     y, edges = np.histogram(vals, bins=bins, range=xrange[:2])
     x = (edges[:-1] + edges[1:]) / 2
     yerr = np.sqrt(y)

@@ -21,6 +21,9 @@ from utils import (
 
 
 class ParseError(IntEnum):
+    """
+    Class for handling parser error types.
+    """
     NONE = 0
     SIGMA = 1
     PSAT = 2
@@ -29,7 +32,7 @@ class ParseError(IntEnum):
 
 
 errm = {
-    ParseError.NONE: '???',
+    ParseError.NONE: 'XXX',
     ParseError.SIGMA: 'sigma/mu > 10%',
     ParseError.PSAT: 'pulse saturated',
     ParseError.PZERO: 'ADC value at 0',
@@ -38,22 +41,37 @@ errm = {
 
 
 class DataFormatError(Exception):
+    """
+    General data format error class.
+    Inherits from Exception errors.
+    """
     pass
 
 
 class DataTypeError(DataFormatError):
+    """
+    Raises an error if there is an invalid data type.
+    Inherits from DataFormatError.
+    """
     def __init__(self, version):
         message = 'invalid datatype in dataformat version: {}'.format(version)
         super().__init__(message)
 
 
 class DataParseError(DataFormatError):
+    """
+    Raises an error if there is a problem parsing the data.
+    Inherits from DataFormatError.
+    """
     def __init__(self, data):
         message = 'error parsing raw data: {}'.format(data)
         super().__init__(message)
 
 
 class DataFormat(ABC):
+    """
+    General data formatting class.
+    """
     datatypes = [
         'TEXT',
         'NUMERIC',
@@ -64,14 +82,24 @@ class DataFormat(ABC):
 
     @classmethod
     def verify(cls, structure):
+        """
+        :param XXX structure:
+        """
         return all(v in cls.datatypes for v in structure.values())
 
     @abstractmethod
     def parser(self, raw):
+        """
+        :param XXX raw:
+        """
         pass
 
 
 class DataFormat_v1(DataFormat):
+    """
+    Database formatting for ADC boards.
+    Inherits from DataFormat.
+    """
     structure = {
         'serial': 'TEXT',
         'id': 'TEXT',
@@ -94,6 +122,11 @@ class DataFormat_v1(DataFormat):
     }
 
     def parser(self, raw, callback=None):
+        """
+        Parser for ADC board data.
+        :param XXX raw: Raw data to be processed.
+        :param XXX callback:
+        """
         entry = {}
 
         files = [''] * 4
@@ -284,6 +317,10 @@ class DataFormat_v1(DataFormat):
 
 
 class DataFormat_v2(DataFormat):
+    """
+    Database formatting for XMIT boards. Does not parse data.
+    Inherits from DataFormat.
+    """
     structure = {
         'serial': 'TEXT',
         'id': 'TEXT',
@@ -299,6 +336,9 @@ class DataFormat_v2(DataFormat):
     }
 
     def parser(self, raw):
+        """
+        Parser for XMIT board data. No data is processed.
+        """
         pass
 
 
